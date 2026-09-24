@@ -83,14 +83,14 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#0a2540] text-emerald-400 shadow-sm border border-slate-700 shrink-0">
           <div className="flex flex-col items-center justify-center leading-none">
             <Droplets className="w-5 h-5 text-emerald-400 stroke-[2.2]" />
-            <span className="text-xs tracking-tight font-extrabold text-blue-300">JBT</span>
+            <span className="text-[12px] tracking-tight font-semibold text-blue-300">JBT</span>
           </div>
         </div>
 
         {/* Title & Subtitle */}
         <div className="flex flex-col">
           <h1
-            className={`text-sm font-bold ${
+            className={`text-[14px] font-semibold ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             } leading-tight line-clamp-1`}
           >
@@ -98,21 +98,21 @@ export const Header: React.FC<HeaderProps> = ({
           </h1>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span
-              className={`text-xs ${
+              className={`text-[12px] ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-500'
               } font-medium`}
             >
               Online Monitoring
             </span>
             <span
-              className={`text-xs font-semibold ${
+              className={`text-[12px] font-semibold ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-500'
               }`}
             >
               (ONLIMO)
             </span>
             <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="hidden sm:inline-block text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className="hidden sm:inline-block text-[12px] text-emerald-600 dark:text-emerald-400 font-medium">
               Live
             </span>
           </div>
@@ -123,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-2 md:gap-3">
         {/* Real-time Indonesian clock display */}
         <div
-          className={`hidden lg:flex items-center text-xs font-medium ${
+          className={`hidden lg:flex items-center text-[12px] font-medium ${
             isDarkMode
               ? 'text-slate-300 bg-slate-800/80 border-slate-700'
               : 'text-gray-700 bg-gray-50 border-gray-200/90'
@@ -136,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div
           className={`flex items-center ${
             isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-gray-200'
-          } p-0.5 rounded-lg border text-xs font-medium`}
+          } p-0.5 rounded-lg border text-[12px] font-medium`}
         >
           <button
             type="button"
@@ -179,7 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           onClick={onOpenLogin}
-          className="min-h-[32px] h-8 flex items-center gap-1.5 px-3.5 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
+          className="min-h-[32px] h-8 flex items-center gap-1.5 px-3.5 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white text-[12px] font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
           title="Masuk ke Akun ONLIMO"
         >
           <LogIn className="w-3.5 h-3.5 stroke-[2.5]" />

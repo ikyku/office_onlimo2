@@ -31,6 +31,8 @@ export interface Station {
   river: string;
   province: string;
   city: string;
+  district?: string; // Kecamatan
+  subdistrict?: string; // Kelurahan/Desa
   lat: number;
   lng: number;
   status: WaterQualityStatus;

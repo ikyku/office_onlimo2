@@ -8,15 +8,10 @@ import {
   Activity,
   MapPin,
   Building2,
-  Droplets,
-  AlertTriangle,
-  HelpCircle,
   Search,
   Check,
   Copy,
   Download,
-  Info,
-  ChevronRight,
 } from 'lucide-react';
 import { Station, WaterQualityStatus } from '../types/onlimo';
 import { INITIAL_METRICS, STATUS_SUMMARIES } from '../data/mockStations';
@@ -43,6 +38,49 @@ interface SidebarProps {
   isDarkMode: boolean;
 }
 
+// Custom status icon matching user's Image 4
+export const WaterQualityStatusIcon: React.FC<{
+  status: WaterQualityStatus | string;
+  className?: string;
+}> = ({ status, className = 'w-4 h-4' }) => {
+  if (status === 'tanpa_data') {
+    // Circle with X inside matching Image 4
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+      >
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M8.5 8.5l7 7" />
+        <path d="M15.5 8.5l-7 7" />
+      </svg>
+    );
+  }
+
+  // Waterdrop outline with 3 vertical wavy lines inside matching Image 4
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 2.8C12 2.8 5.2 10.8 5.2 15.3A6.8 6.8 0 0 0 18.8 15.3C18.8 10.8 12 2.8 12 2.8Z" />
+      <path d="M11 13c.4.6.4 1.3 0 1.9s-.4 1.3 0 1.9" strokeWidth="1.6" />
+      <path d="M13.5 13c.4.6.4 1.3 0 1.9s-.4 1.3 0 1.9" strokeWidth="1.6" />
+      <path d="M16 13c.4.6.4 1.3 0 1.9s-.4 1.3 0 1.9" strokeWidth="1.6" />
+    </svg>
+  );
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({
   stations,
   selectedStation,
@@ -60,7 +98,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   cities,
   onRefreshData,
   isRefreshing,
-  onOpenRegulationInfo,
   onResetFilters,
   isDarkMode,
 }) => {
@@ -70,8 +107,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [isRegulationExpanded, setIsRegulationExpanded] = useState(false); // Collapsed by default
   const [activeStationTab, setActiveStationTab] = useState<'grafik' | 'profil'>('grafik');
   const [copiedCode, setCopiedCode] = useState(false);
-  const [isSecondaryTrendOpen, setIsSecondaryTrendOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Active line filters for Chart 1
+  const [activeLineParams, setActiveLineParams] = useState<Record<string, boolean>>({
+    pH: true,
+    AMMONIA: true,
+    Nitrate: true,
+    'ORP UAT': true,
+    COD: true,
+    TSS: true,
+    BOD: true,
+    TDS: true,
+    DO: true,
+  });
+
+  // Active bar filters for Chart 2
+  const [activeBarStatuses, setActiveBarStatuses] = useState<Record<string, boolean>>({
+    'Baku Mutu': true,
+    'Cemar Ringan': true,
+    'Cemar Sedang': true,
+    'Cemar Berat': true,
+  });
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -109,73 +166,104 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const handleDownloadChart = () => {
+  const handleDownloadData = (title: string) => {
     if (!selectedStation) return;
-    const chartData = `Stasiun: ${selectedStation.name} (${selectedStation.code})
+    const content = `Data ${title} - ${selectedStation.name} (${selectedStation.code})
 Tanggal: ${selectedStation.lastUpdate}
 Status: ${selectedStation.status}
 IP Score: ${selectedStation.ipScore}
-Parameter:
-- Nitrate Ratio: 4.5
-- ORP UAT Ratio: 11.2
-- COD Ratio: 14.8
-- TSS Ratio: 6.9
-- BOD Ratio: 5.2
-- pH: ${selectedStation.parameters.ph}
-- DO: ${selectedStation.parameters.do} mg/L
-- Suhu: ${selectedStation.parameters.temp} °C
+Waktu Unduh: ${new Date().toISOString()}
 `;
-    const blob = new Blob([chartData], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tren_kualitas_air_${selectedStation.code}.txt`;
+    a.download = `${title.toLowerCase().replace(/\s+/g, '_')}_${selectedStation.code}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  // Get status badge styling
+  // Status badge styling helper
   const getStatusBadge = (status: WaterQualityStatus) => {
     switch (status) {
       case 'baku_mutu':
+      case 'memenuhi_baku_mutu':
         return {
           label: 'Memenuhi Baku Mutu',
-          className: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700',
+          className:
+            'bg-[#E8F8EE] dark:bg-emerald-950/60 text-[#16a34a] dark:text-emerald-300 border border-[#bbf7d0] dark:border-emerald-700',
         };
       case 'cemar_ringan':
         return {
           label: 'Cemar Ringan',
-          className: 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-700',
+          className:
+            'bg-[#EBF2FE] dark:bg-blue-950/60 text-[#2563eb] dark:text-blue-300 border border-[#bfdbfe] dark:border-blue-700',
         };
       case 'cemar_sedang':
         return {
           label: 'Cemar Sedang',
-          className: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700',
+          className:
+            'bg-[#FEF9E8] dark:bg-amber-950/60 text-[#d97706] dark:text-amber-300 border border-[#fde68a] dark:border-amber-700',
         };
       case 'cemar_berat':
         return {
           label: 'Cemar Berat',
-          className: 'bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700',
+          className:
+            'bg-[#FEECEC] dark:bg-red-950/60 text-[#ef4444] dark:text-red-300 border border-[#fecaca] dark:border-red-700',
         };
       case 'tanpa_data':
       default:
         return {
           label: 'Tanpa Data',
-          className: 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-700',
+          className:
+            'bg-[#F1F3F5] dark:bg-slate-800 text-[#64748b] dark:text-slate-300 border border-gray-300 dark:border-slate-700',
         };
     }
   };
 
-  // 5 parameter bars for the chart matching image.png
-  const chartBars = [
-    { name: 'Nitrate', value: 4.5, color: '#3b82f6', bgGradient: 'from-blue-500/80 to-blue-500/10' },
-    { name: 'ORP UAT', value: 11.2, color: '#eab308', bgGradient: 'from-amber-400/85 to-amber-300/15' },
-    { name: 'COD', value: 14.8, color: '#ef4444', bgGradient: 'from-red-500/85 to-red-500/10' },
-    { name: 'TSS', value: 6.9, color: '#3b82f6', bgGradient: 'from-blue-500/80 to-blue-500/10' },
-    { name: 'BOD', value: 5.2, color: '#3b82f6', bgGradient: 'from-blue-500/80 to-blue-500/10' },
+  // Curve parameters for Chart 1
+  const lineSeries = [
+    { name: 'pH', color: '#f97316', path: 'M 10 100 Q 55 75, 100 60 T 190 40 T 280 70' },
+    { name: 'AMMONIA', color: '#22c55e', path: 'M 10 130 Q 55 135, 100 130 T 190 100 T 280 75' },
+    { name: 'Nitrate', color: '#14b8a6', path: 'M 10 165 Q 55 155, 100 140 T 190 110 T 280 135' },
+    { name: 'ORP UAT', color: '#0ea5e9', path: 'M 10 75 Q 55 60, 100 55 T 190 120 T 280 145' },
+    { name: 'COD', color: '#3b82f6', path: 'M 10 85 Q 55 65, 100 70 T 190 90 T 280 135' },
+    { name: 'TSS', color: '#a855f7', path: 'M 10 130 Q 55 110, 100 95 T 190 90 T 280 125' },
+    { name: 'BOD', color: '#ec4899', path: 'M 10 140 Q 55 125, 100 110 T 190 95 T 280 115' },
+    { name: 'TDS', color: '#eab308', path: 'M 10 135 Q 55 125, 100 115 T 190 100 T 280 105' },
+    { name: 'DO', color: '#ef4444', path: 'M 10 90 Q 55 75, 100 65 T 190 60 T 280 90' },
   ];
 
-  const maxChartValue = 18;
+  // Bar items for Chart 2
+  const statusBars = [
+    { time: '10:00', value: 7.2, status: 'Cemar Berat', color: '#ef4444' },
+    { time: '11:00', value: 5.8, status: 'Cemar Berat', color: '#ef4444' },
+    { time: '12:00', value: 2.3, status: 'Cemar Ringan', color: '#3b82f6' },
+    { time: '13:00', value: 3.5, status: 'Cemar Sedang', color: '#eab308' },
+    { time: '14:00', value: 4.7, status: 'Cemar Sedang', color: '#eab308' },
+  ];
+
+  // Parameters list for Section 3
+  const parameterRows = [
+    { name: 'pH', value: '81.82 mg/L', statusText: 'Cemar Berat', statusType: 'cemar_berat', ipScore: '12' },
+    { name: 'AMMONIA', value: '81.82 mg/L', statusText: 'Cemar Sedang', statusType: 'cemar_sedang', ipScore: '7.3' },
+    { name: 'COD', value: '81.82 mg/L', statusText: 'Cemar Ringan', statusType: 'cemar_ringan', ipScore: '3.0' },
+    { name: 'TSS', value: '81.82 mg/L', statusText: 'Memenuhi Baku Mutu', statusType: 'baku_mutu', ipScore: '0.6' },
+    { name: 'BOD', value: '81.82 mg/L', statusText: 'Cemar Ringan', statusType: 'cemar_ringan', ipScore: '3.0' },
+    { name: 'TDS', value: '81.82 mg/L', statusText: 'Cemar Ringan', statusType: 'cemar_ringan', ipScore: '3.0' },
+    { name: 'DO', value: '81.82 mg/L', statusText: 'Cemar Sedang', statusType: 'cemar_sedang', ipScore: '7.3' },
+    { name: 'ORP UAT', value: '81.82 mg/L', statusText: 'Memenuhi Baku Mutu', statusType: 'baku_mutu', ipScore: '0.6' },
+    { name: 'Nitrate', value: '81.82 mg/L', statusText: 'Memenuhi Baku Mutu', statusType: 'baku_mutu', ipScore: '0.6' },
+  ];
+
+  // 5 parameter bars for Chart 4
+  const chart4Bars = [
+    { name: 'Nitrate', value: 4.5, color: '#3b82f6' },
+    { name: 'ORP UAT', value: 11.2, color: '#eab308' },
+    { name: 'COD', value: 14.8, color: '#ef4444' },
+    { name: 'TSS', value: 6.9, color: '#3b82f6' },
+    { name: 'BOD', value: 5.2, color: '#3b82f6' },
+  ];
 
   return (
     <aside
@@ -183,7 +271,7 @@ Parameter:
         isDarkMode
           ? 'bg-[#0f172a] text-slate-100 border-slate-800'
           : 'bg-[#f4f6f8] text-gray-900 border-[#E4E4E7]'
-      } border-l flex flex-col justify-between overflow-hidden shrink-0 z-20`}
+      } border-l flex flex-col justify-between overflow-hidden shrink-0 z-20 font-['Inter',sans-serif]`}
     >
       {/* ========================================================================= */}
       {/* BAGIAN 1: FILTER STASIUN (Warna abu-abu, Separator border-b #E4E4E7) */}
@@ -204,7 +292,7 @@ Parameter:
                 isDarkMode
                   ? 'bg-slate-800 border-slate-700 text-slate-100 hover:border-slate-600'
                   : 'bg-white border-gray-300 text-gray-800 hover:border-gray-400'
-              } border rounded-lg text-xs font-medium transition-colors text-left shadow-2xs cursor-pointer`}
+              } border rounded-lg text-[12px] font-medium transition-colors text-left shadow-2xs cursor-pointer`}
             >
               <span className="truncate">
                 {selectedStation ? selectedStation.name : 'Pilih Stasiun'}
@@ -239,7 +327,7 @@ Parameter:
                       placeholder="Cari stasiun, sungai, kota..."
                       value={stationSearch}
                       onChange={(e) => setStationSearch(e.target.value)}
-                      className={`w-full min-h-[32px] pl-8 pr-3 py-1.5 text-xs ${
+                      className={`w-full min-h-[32px] pl-8 pr-3 py-1.5 text-[12px] ${
                         isDarkMode
                           ? 'bg-slate-900 border-slate-700 text-white'
                           : 'bg-gray-50 border-gray-200 text-gray-900'
@@ -249,7 +337,7 @@ Parameter:
                   </div>
                 </div>
 
-                <div className="max-h-56 overflow-y-auto py-1 text-xs">
+                <div className="max-h-56 overflow-y-auto py-1 text-[12px]">
                   <button
                     type="button"
                     onClick={() => {
@@ -261,7 +349,7 @@ Parameter:
                       isDarkMode ? 'hover:bg-slate-700/60' : 'hover:bg-gray-50'
                     } ${
                       !selectedStation
-                        ? 'font-bold text-[#ff6900]'
+                        ? 'font-semibold text-[#ff6900]'
                         : isDarkMode
                         ? 'text-slate-300'
                         : 'text-gray-700'
@@ -272,7 +360,7 @@ Parameter:
                   </button>
 
                   {filteredStationsForDropdown.length === 0 ? (
-                    <div className="px-3 py-4 text-center text-gray-400 text-xs">
+                    <div className="px-3 py-4 text-center text-gray-400 text-[12px]">
                       Stasiun tidak ditemukan
                     </div>
                   ) : (
@@ -290,8 +378,8 @@ Parameter:
                         } ${
                           selectedStation?.id === st.id
                             ? isDarkMode
-                              ? 'bg-orange-950/40 font-bold text-[#ff6900]'
-                              : 'bg-orange-50 font-bold text-[#ff6900]'
+                              ? 'bg-orange-950/40 font-semibold text-[#ff6900]'
+                              : 'bg-orange-50 font-semibold text-[#ff6900]'
                             : isDarkMode
                             ? 'text-slate-300'
                             : 'text-gray-700'
@@ -300,7 +388,7 @@ Parameter:
                         <div className="truncate pr-2">
                           <p className="truncate font-medium">{st.name}</p>
                           <p
-                            className={`text-xs ${
+                            className={`text-[12px] ${
                               isDarkMode ? 'text-slate-400' : 'text-gray-500'
                             } truncate`}
                           >
@@ -377,7 +465,7 @@ Parameter:
                   isDarkMode
                     ? 'bg-slate-900 border-slate-700 text-slate-200'
                     : 'bg-white border-gray-300 text-gray-800'
-                } border rounded-lg text-xs font-medium focus:outline-none focus:border-[#ff6900] cursor-pointer`}
+                } border rounded-lg text-[12px] font-medium focus:outline-none focus:border-[#ff6900] cursor-pointer`}
               >
                 <option value="all">Pilih DAS</option>
                 {dases.map((d) => (
@@ -401,7 +489,7 @@ Parameter:
                   isDarkMode
                     ? 'bg-slate-900 border-slate-700 text-slate-200'
                     : 'bg-white border-gray-300 text-gray-800'
-                } border rounded-lg text-xs font-medium focus:outline-none focus:border-[#ff6900] cursor-pointer`}
+                } border rounded-lg text-[12px] font-medium focus:outline-none focus:border-[#ff6900] cursor-pointer`}
               >
                 <option value="all">Pilih Provinsi</option>
                 {provinces.map((prov) => (
@@ -422,7 +510,7 @@ Parameter:
                   isDarkMode
                     ? 'bg-slate-900 border-slate-700 text-slate-200'
                     : 'bg-white border-gray-300 text-gray-800'
-                } border rounded-lg text-xs font-medium focus:outline-none focus:border-[#ff6900] cursor-pointer`}
+                } border rounded-lg text-[12px] font-medium focus:outline-none focus:border-[#ff6900] cursor-pointer`}
               >
                 <option value="all">Pilih Kab/Kota</option>
                 {cities.map((city) => (
@@ -443,7 +531,7 @@ Parameter:
                   isDarkMode
                     ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700'
                     : 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50'
-                } border rounded-lg text-xs font-semibold transition-colors shadow-2xs cursor-pointer flex items-center justify-center`}
+                } border rounded-lg text-[12px] font-semibold transition-colors shadow-2xs cursor-pointer flex items-center justify-center`}
               >
                 Reset
               </button>
@@ -451,7 +539,7 @@ Parameter:
               <button
                 type="button"
                 onClick={handleApplyFilter}
-                className="min-h-[32px] h-8 px-6 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer flex items-center justify-center"
+                className="min-h-[32px] h-8 px-6 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white rounded-lg text-[12px] font-semibold transition-colors shadow-xs cursor-pointer flex items-center justify-center"
               >
                 Cari
               </button>
@@ -464,379 +552,673 @@ Parameter:
       {/* BAGIAN 2: MONITORING / DETAIL STASIUN (Warna PUTIH, Separator border-b #E4E4E7) */}
       {/* ========================================================================= */}
       <div
-        className={`flex-1 overflow-y-auto p-4 ${
+        className={`flex-1 min-h-0 flex flex-col ${
           isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-900'
-        } border-b border-[#E4E4E7] dark:border-slate-800`}
+        } border-b border-[#E4E4E7] dark:border-slate-800 overflow-hidden`}
       >
         {selectedStation ? (
           /* ======================================================================= */
-          /* TAMPILAN DETAIL STASIUN SPESIFIK (PERSIS SEPERTI GAMBAR PERTAMA) */
+          /* TAMPILAN DETAIL STASIUN SPESIFIK (SESUAI GAMBAR 1 & GAMBAR 2) */
           /* ======================================================================= */
-          <div className="space-y-3.5 animate-in fade-in duration-200">
-            {/* Header: Nama Stasiun */}
-            <div>
-              <h2 className="text-base font-bold text-gray-900 dark:text-white leading-tight">
-                {selectedStation.name}
-              </h2>
+          <div className="flex-1 min-h-0 flex flex-col h-full overflow-hidden animate-in fade-in duration-200">
+            {/* Header: Nama Stasiun hingga Tab Profil/Grafik -> FIXED / STAY (TIDAK IKUT SCROLL) */}
+            <div className="p-4 pb-3 space-y-3 shrink-0 bg-white dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800 z-10">
+              {/* Header: Nama Stasiun */}
+              <div>
+                <h2 className="text-[20px] font-semibold text-gray-900 dark:text-white leading-tight">
+                  {selectedStation.name}
+                </h2>
 
-              {/* Sub-row 1: Online status badge + Serial Code + Copy Icon */}
-              <div className="flex items-center justify-between mt-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-400 dark:border-emerald-600 rounded">
-                    Online
-                  </span>
-                  <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
-                    {selectedStation.code}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  title="Salin Kode Stasiun"
-                  className="min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  {copiedCode ? (
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-
-              {/* Sub-row 2: Status Kualitas Air + Nilai IP + Tanggal & Jam */}
-              <div className="flex items-center justify-between mt-2 pt-1 border-t border-gray-100 dark:border-slate-800 text-xs">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full font-semibold ${
-                      getStatusBadge(selectedStation.status).className
-                    }`}
-                  >
-                    {getStatusBadge(selectedStation.status).label}
-                  </span>
-                  <span className="font-bold text-gray-900 dark:text-white text-xs">
-                    {selectedStation.ipScore.toFixed(2)}
-                  </span>
-                </div>
-
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {selectedStation.lastUpdate}
-                </span>
-              </div>
-            </div>
-
-            {/* Tabs: [ Grafik Stasiun ] [ Profil Stasiun ] */}
-            <div
-              className={`flex p-1 rounded-xl ${
-                isDarkMode ? 'bg-slate-800' : 'bg-gray-100'
-              } gap-1`}
-            >
-              <button
-                type="button"
-                onClick={() => setActiveStationTab('grafik')}
-                className={`flex-1 min-h-[32px] py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
-                  activeStationTab === 'grafik'
-                    ? isDarkMode
-                      ? 'bg-slate-700 text-white shadow-xs'
-                      : 'bg-white text-gray-900 shadow-xs'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-                }`}
-              >
-                Grafik Stasiun
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveStationTab('profil')}
-                className={`flex-1 min-h-[32px] py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
-                  activeStationTab === 'profil'
-                    ? isDarkMode
-                      ? 'bg-slate-700 text-white shadow-xs'
-                      : 'bg-white text-gray-900 shadow-xs'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
-                }`}
-              >
-                Profil Stasiun
-              </button>
-            </div>
-
-            {/* TAB 1: Grafik Stasiun (Matching image.png) */}
-            {activeStationTab === 'grafik' && (
-              <div className="space-y-3">
-                {/* Header Section: Tren Parameter Kualitas Air Hari Ini + Download Icon */}
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-900 dark:text-white">
-                      Tren Parameter Kualitas Air Hari Ini
-                    </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      Pantau perubahan nilai setiap parameter hari ini.
-                    </p>
+                {/* Sub-row 1: Online status badge + Serial Code + Copy Icon */}
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 text-[12px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-400 dark:border-emerald-600 rounded">
+                      Online
+                    </span>
+                    <span className="text-[12px] font-mono text-gray-500 dark:text-gray-400">
+                      {selectedStation.code}
+                    </span>
                   </div>
 
                   <button
                     type="button"
-                    onClick={handleDownloadChart}
-                    title="Unduh Data Tren"
-                    className={`min-h-[32px] min-w-[32px] p-1.5 border rounded-lg ${
-                      isDarkMode
-                        ? 'border-slate-700 hover:bg-slate-800 text-slate-300'
-                        : 'border-gray-200 hover:bg-gray-50 text-gray-600'
-                    } transition-colors flex items-center justify-center shadow-2xs cursor-pointer shrink-0`}
+                    onClick={handleCopyCode}
+                    title="Salin Kode Stasiun"
+                    className="min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                   >
-                    <Download className="w-4 h-4" />
+                    {copiedCode ? (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
 
-                {/* THE BAR CHART (Matching image.png exactly) */}
-                <div
-                  className={`p-2.5 rounded-xl border ${
-                    isDarkMode
-                      ? 'bg-slate-900/60 border-slate-800'
-                      : 'bg-slate-50/50 border-gray-100'
+                {/* Sub-row 2: Status Kualitas Air + Nilai IP + Tanggal & Jam */}
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-slate-800 text-[12px]">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full font-medium text-[12px] ${
+                        getStatusBadge(selectedStation.status).className
+                      }`}
+                    >
+                      {getStatusBadge(selectedStation.status).label}
+                    </span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">
+                      {selectedStation.ipScore.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <span className="text-[12px] text-gray-500 dark:text-gray-400">
+                    {selectedStation.lastUpdate}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tabs: [ Grafik Stasiun ] [ Profil Stasiun ] -> FIXED */}
+              <div
+                className={`flex p-1 rounded-xl ${
+                  isDarkMode ? 'bg-slate-800' : 'bg-gray-100'
+                } gap-1`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveStationTab('grafik')}
+                  className={`flex-1 min-h-[32px] py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer flex items-center justify-center ${
+                    activeStationTab === 'grafik'
+                      ? isDarkMode
+                        ? 'bg-slate-700 text-white shadow-xs'
+                        : 'bg-white text-gray-900 shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white font-medium'
                   }`}
                 >
-                  <div className="flex h-56 pt-2">
-                    {/* Left Axis: "Indeks Pencemaran" + 4 Color Bands */}
-                    <div className="flex items-stretch gap-1 mr-2 shrink-0 select-none">
-                      {/* Vertical Title: "Indeks Pencemaran" */}
-                      <div className="flex items-center justify-center">
-                        <span
-                          className="text-xs text-gray-500 dark:text-gray-400 font-semibold tracking-wide"
-                          style={{
-                            writingMode: 'vertical-rl',
-                            transform: 'rotate(180deg)',
-                          }}
-                        >
-                          Indeks Pencemaran
-                        </span>
+                  Grafik Stasiun
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveStationTab('profil')}
+                  className={`flex-1 min-h-[32px] py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer flex items-center justify-center ${
+                    activeStationTab === 'profil'
+                      ? isDarkMode
+                        ? 'bg-slate-700 text-white shadow-xs'
+                        : 'bg-white text-gray-900 shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white font-medium'
+                  }`}
+                >
+                  Profil Stasiun
+                </button>
+              </div>
+            </div>
+
+            {/* SCROLLABLE CONTENT BODY: Bagian ini yang scroll ke bawah */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-5">
+              {/* TAB 1: GRAFIK STASIUN (4 BAGIAN SEPERTI PADA GAMBAR PERTAMA) */}
+              {activeStationTab === 'grafik' && (
+                <div className="space-y-6">
+                  {/* ======================================================= */}
+                  {/* 1. GRAFIK 1: Tren Parameter Kualitas Air Hari Ini (Line) */}
+                  {/* ======================================================= */}
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white leading-snug">
+                          Tren Parameter Kualitas Air Hari Ini
+                        </h3>
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">
+                          Pantau perubahan nilai setiap parameter hari ini.
+                        </p>
                       </div>
 
-                      {/* 4 Colored Bands (Berat, Sedang, Ringan, Baku Mutu) */}
-                      <div className="flex flex-col w-6 rounded-md overflow-hidden text-xs font-bold text-center leading-none shadow-2xs">
-                        {/* Zone 4: Berat (Top, Red/Pink) */}
-                        <div
-                          className="flex-1 bg-red-100 text-red-700 flex items-center justify-center border-b border-white/60"
-                          style={{
-                            writingMode: 'vertical-rl',
-                            transform: 'rotate(180deg)',
-                          }}
-                        >
-                          Berat
-                        </div>
-                        {/* Zone 3: Sedang (Yellow/Amber) */}
-                        <div
-                          className="flex-1 bg-amber-100 text-amber-700 flex items-center justify-center border-b border-white/60"
-                          style={{
-                            writingMode: 'vertical-rl',
-                            transform: 'rotate(180deg)',
-                          }}
-                        >
-                          Sedang
-                        </div>
-                        {/* Zone 2: Ringan (Blue) */}
-                        <div
-                          className="flex-1 bg-blue-100 text-blue-700 flex items-center justify-center border-b border-white/60"
-                          style={{
-                            writingMode: 'vertical-rl',
-                            transform: 'rotate(180deg)',
-                          }}
-                        >
-                          Ringan
-                        </div>
-                        {/* Zone 1: Baku Mutu (Bottom, Green) */}
-                        <div
-                          className="flex-1 bg-emerald-100 text-emerald-800 flex items-center justify-center"
-                          style={{
-                            writingMode: 'vertical-rl',
-                            transform: 'rotate(180deg)',
-                          }}
-                        >
-                          Baku Mutu
-                        </div>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadData('Tren Parameter Kualitas Air')}
+                        title="Unduh Data Tren"
+                        className={`min-h-[32px] min-w-[32px] p-1.5 border rounded-lg ${
+                          isDarkMode
+                            ? 'border-slate-700 hover:bg-slate-800 text-slate-300'
+                            : 'border-gray-200 hover:bg-gray-50 text-gray-600'
+                        } transition-colors flex items-center justify-center shadow-2xs cursor-pointer shrink-0`}
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
                     </div>
 
-                    {/* Chart Bars Area */}
-                    <div className="flex-1 flex flex-col justify-end">
-                      {/* Bars Container */}
-                      <div className="flex-1 flex items-end justify-around gap-2 px-1 border-b border-gray-200 dark:border-slate-700">
-                        {chartBars.map((bar) => {
-                          const heightPercent = Math.min(
-                            100,
-                            Math.max(12, (bar.value / maxChartValue) * 100)
-                          );
-                          return (
-                            <div
-                              key={bar.name}
-                              className="flex-1 flex flex-col items-center justify-end h-full group"
-                            >
-                              {/* Top Value Label */}
-                              <span className="text-xs font-bold text-gray-800 dark:text-slate-100 mb-1">
-                                {bar.value.toFixed(1)}
-                              </span>
-
-                              {/* Vertical Gradient Bar */}
-                              <div
-                                className="w-full max-w-[34px] rounded-t-lg transition-all duration-300 relative shadow-xs"
-                                style={{
-                                  height: `${heightPercent}%`,
-                                  background: `linear-gradient(180deg, ${bar.color} 0%, ${bar.color}20 100%)`,
-                                }}
+                    {/* Line Chart Container with Right Y-Axis & X-Axis */}
+                    <div
+                      className={`p-2 rounded-xl border ${
+                        isDarkMode
+                          ? 'bg-slate-900/60 border-slate-800'
+                          : 'bg-slate-50/40 border-gray-100'
+                      }`}
+                    >
+                      <div className="relative h-48 flex">
+                        {/* SVG Curves */}
+                        <div className="flex-1 relative">
+                          <svg viewBox="0 0 290 180" className="w-full h-full overflow-visible">
+                            {/* Horizontal Gridlines (0, 10, 20, 30, 40, 50, 60, 70, 80) */}
+                            {[20, 40, 60, 80, 100, 120, 140, 160].map((y) => (
+                              <line
+                                key={y}
+                                x1="0"
+                                y1={y}
+                                x2="290"
+                                y2={y}
+                                stroke={isDarkMode ? '#334155' : '#f1f5f9'}
+                                strokeWidth="1"
                               />
-                            </div>
-                          );
-                        })}
+                            ))}
+
+                            {/* Render Parameter Curve Lines */}
+                            {lineSeries.map(
+                              (s) =>
+                                activeLineParams[s.name] && (
+                                  <path
+                                    key={s.name}
+                                    d={s.path}
+                                    fill="none"
+                                    stroke={s.color}
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    className="transition-all duration-200"
+                                  />
+                                )
+                            )}
+                          </svg>
+
+                          {/* X-Axis Labels */}
+                          <div className="flex justify-between text-[12px] text-gray-400 dark:text-slate-500 pt-1 px-1">
+                            <span>10:00</span>
+                            <span>11:00</span>
+                            <span>12:00</span>
+                            <span>13:00</span>
+                            <span>14:00</span>
+                          </div>
+                        </div>
+
+                        {/* Right Y-Axis with numbers & vertical title */}
+                        <div className="w-8 flex items-center justify-between pl-1 select-none">
+                          <div className="flex flex-col justify-between h-full text-[12px] text-gray-400 dark:text-slate-500 text-right pr-0.5">
+                            <span>80</span>
+                            <span>70</span>
+                            <span>60</span>
+                            <span>50</span>
+                            <span>40</span>
+                            <span>30</span>
+                            <span>20</span>
+                            <span>10</span>
+                            <span>0</span>
+                          </div>
+                          <span
+                            className="text-[12px] text-gray-500 dark:text-gray-400 font-medium"
+                            style={{
+                              writingMode: 'vertical-rl',
+                              transform: 'rotate(180deg)',
+                            }}
+                          >
+                            Nilai Parameter
+                          </span>
+                        </div>
                       </div>
 
-                      {/* X-Axis Parameter Labels */}
-                      <div className="flex justify-around gap-2 px-1 pt-1.5 text-center">
-                        {chartBars.map((bar) => (
-                          <div
-                            key={bar.name}
-                            className="flex-1 text-xs font-semibold text-gray-600 dark:text-slate-300 truncate"
-                            title={bar.name}
+                      {/* Interactive Legend Checkboxes matching Image 1 */}
+                      <div className="flex flex-wrap gap-x-3 gap-y-1.5 pt-3 mt-1 border-t border-gray-100 dark:border-slate-800 text-[12px]">
+                        {lineSeries.map((item) => (
+                          <label
+                            key={item.name}
+                            className="inline-flex items-center gap-1 cursor-pointer select-none"
                           >
-                            {bar.name}
-                          </div>
+                            <input
+                              type="checkbox"
+                              checked={activeLineParams[item.name]}
+                              onChange={() =>
+                                setActiveLineParams((prev) => ({
+                                  ...prev,
+                                  [item.name]: !prev[item.name],
+                                }))
+                              }
+                              className="w-3.5 h-3.5 rounded text-orange-500 focus:ring-0 cursor-pointer accent-[#ff6900]"
+                            />
+                            <span
+                              className="font-medium"
+                              style={{ color: isDarkMode ? '#cbd5e1' : '#4b5563' }}
+                            >
+                              {item.name}
+                            </span>
+                          </label>
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Footnote below bars matching image.png */}
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 pt-2.5 mt-1 border-t border-gray-100 dark:border-slate-800">
-                    <div className="w-3.5 h-3.5 rounded-full border border-gray-400 flex items-center justify-center text-xs font-serif shrink-0">
-                      i
+                  {/* ======================================================= */}
+                  {/* 2. GRAFIK 2: Tren Status Mutu Air Hari Ini (Bar Chart) */}
+                  {/* ======================================================= */}
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white leading-snug">
+                          Tren Status Mutu Air Hari Ini
+                        </h3>
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">
+                          Indeks pencemar dan status mutu air hari ini
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadData('Tren Status Mutu Air')}
+                        title="Unduh Data Status Mutu"
+                        className={`min-h-[32px] min-w-[32px] p-1.5 border rounded-lg ${
+                          isDarkMode
+                            ? 'border-slate-700 hover:bg-slate-800 text-slate-300'
+                            : 'border-gray-200 hover:bg-gray-50 text-gray-600'
+                        } transition-colors flex items-center justify-center shadow-2xs cursor-pointer shrink-0`}
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
                     </div>
-                    <span>
-                      Indeks pencemaran ditentukan dari nilai ratio per parameter
-                    </span>
-                  </div>
-                </div>
 
-                {/* Secondary Collapsible Section matching image.png */}
-                <div
-                  className={`border rounded-xl overflow-hidden ${
-                    isDarkMode ? 'border-slate-800' : 'border-gray-200'
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setIsSecondaryTrendOpen(!isSecondaryTrendOpen)}
-                    className={`w-full min-h-[32px] p-2.5 flex items-center justify-between text-xs font-bold ${
-                      isDarkMode ? 'bg-slate-800/80 hover:bg-slate-800' : 'bg-gray-50 hover:bg-gray-100'
-                    } transition-colors cursor-pointer text-left`}
-                  >
-                    <span>Tren Parameter Kualitas Air Hari Ini</span>
-                    <ChevronRight
-                      className={`w-4 h-4 text-gray-400 transition-transform ${
-                        isSecondaryTrendOpen ? 'rotate-90' : ''
+                    {/* Bar Chart Container */}
+                    <div
+                      className={`p-2 rounded-xl border ${
+                        isDarkMode
+                          ? 'bg-slate-900/60 border-slate-800'
+                          : 'bg-slate-50/40 border-gray-100'
                       }`}
-                    />
-                  </button>
+                    >
+                      <div className="relative h-48 flex">
+                        {/* Bars Area */}
+                        <div className="flex-1 flex flex-col justify-end">
+                          <div className="flex-1 flex items-end justify-around gap-2 px-3 border-b border-gray-200 dark:border-slate-700">
+                            {statusBars.map((bar) => {
+                              const heightPercent = (bar.value / 8) * 100;
+                              const isVisible = activeBarStatuses[bar.status];
+                              return (
+                                <div
+                                  key={bar.time}
+                                  className="flex-1 flex flex-col items-center justify-end h-full"
+                                >
+                                  {isVisible ? (
+                                    <div
+                                      className="w-full max-w-[28px] rounded-t-sm transition-all duration-300 shadow-2xs"
+                                      style={{
+                                        height: `${heightPercent}%`,
+                                        background: `linear-gradient(180deg, ${bar.color} 0%, ${bar.color}20 100%)`,
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full max-w-[28px] h-0.5 bg-gray-200 dark:bg-slate-700" />
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
 
-                  {isSecondaryTrendOpen && (
-                    <div className="p-3 space-y-2 text-xs">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="p-2 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                          <span className="text-gray-500 block">pH Sensor</span>
-                          <span className="font-bold text-gray-900 dark:text-white">
-                            {selectedStation.parameters.ph.toFixed(2)}
-                          </span>
+                          {/* X-Axis Labels */}
+                          <div className="flex justify-around text-[12px] text-gray-400 dark:text-slate-500 pt-1.5 px-3 text-center">
+                            <span>0</span>
+                            <span>10:00</span>
+                            <span>11:00</span>
+                            <span>12:00</span>
+                            <span>13:00</span>
+                            <span>14:00</span>
+                          </div>
                         </div>
-                        <div className="p-2 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                          <span className="text-gray-500 block">Dissolved Oxygen</span>
-                          <span className="font-bold text-gray-900 dark:text-white">
-                            {selectedStation.parameters.do.toFixed(2)} mg/L
-                          </span>
-                        </div>
-                        <div className="p-2 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                          <span className="text-gray-500 block">BOD</span>
-                          <span className="font-bold text-gray-900 dark:text-white">
-                            {selectedStation.parameters.bod.toFixed(2)} mg/L
-                          </span>
-                        </div>
-                        <div className="p-2 bg-gray-50 dark:bg-slate-900 rounded-lg">
-                          <span className="text-gray-500 block">COD</span>
-                          <span className="font-bold text-gray-900 dark:text-white">
-                            {selectedStation.parameters.cod.toFixed(2)} mg/L
+
+                        {/* Right Y-Axis */}
+                        <div className="w-8 flex items-center justify-between pl-1 select-none">
+                          <div className="flex flex-col justify-between h-full text-[12px] text-gray-400 dark:text-slate-500 text-right pr-0.5">
+                            <span>8</span>
+                            <span>7</span>
+                            <span>6</span>
+                            <span>5</span>
+                            <span>4</span>
+                            <span>3</span>
+                            <span>2</span>
+                            <span>1</span>
+                            <span>0</span>
+                          </div>
+                          <span
+                            className="text-[12px] text-gray-500 dark:text-gray-400 font-medium"
+                            style={{
+                              writingMode: 'vertical-rl',
+                              transform: 'rotate(180deg)',
+                            }}
+                          >
+                            Indeks Pencemaran
                           </span>
                         </div>
                       </div>
+
+                      {/* Legend Checkboxes */}
+                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-3 mt-1 border-t border-gray-100 dark:border-slate-800 text-[12px]">
+                        {['Baku Mutu', 'Cemar Ringan', 'Cemar Sedang', 'Cemar Berat'].map((s) => (
+                          <label
+                            key={s}
+                            className="inline-flex items-center gap-1.5 cursor-pointer select-none"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={activeBarStatuses[s]}
+                              onChange={() =>
+                                setActiveBarStatuses((prev) => ({
+                                  ...prev,
+                                  [s]: !prev[s],
+                                }))
+                              }
+                              className="w-3.5 h-3.5 rounded text-orange-500 focus:ring-0 cursor-pointer accent-[#ff6900]"
+                            />
+                            <span
+                              className="font-medium"
+                              style={{ color: isDarkMode ? '#cbd5e1' : '#4b5563' }}
+                            >
+                              {s}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            )}
+                  </div>
 
-            {/* TAB 2: Profil Stasiun */}
-            {activeStationTab === 'profil' && (
-              <div className="space-y-3 text-xs">
-                <div
-                  className={`p-3 rounded-xl border ${
-                    isDarkMode
-                      ? 'bg-slate-900 border-slate-800'
-                      : 'bg-gray-50 border-gray-200'
-                  } space-y-2`}
-                >
-                  <div className="flex justify-between py-1 border-b border-gray-200 dark:border-slate-800">
-                    <span className="text-gray-500 dark:text-gray-400">Sungai</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {selectedStation.river}
+                  {/* ======================================================= */}
+                  {/* 3. SECTION 3: Status Parameter Terbaru (Table / List)   */}
+                  {/* ======================================================= */}
+                  <div className="space-y-2">
+                    <div>
+                      <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white leading-snug">
+                        Status Parameter Terbaru
+                      </h3>
+                      <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        Pantau nilai, indeks pencemar dan status setiap parameter kualitas air terbaru.
+                      </p>
+                    </div>
+
+                    <div
+                      className={`rounded-xl border ${
+                        isDarkMode
+                          ? 'bg-slate-900/60 border-slate-800'
+                          : 'bg-white border-gray-100'
+                      } divide-y divide-gray-100 dark:divide-slate-800 shadow-2xs overflow-hidden`}
+                    >
+                      {parameterRows.map((row) => (
+                        <div
+                          key={row.name}
+                          className="flex items-center justify-between p-2.5 hover:bg-gray-50/50 dark:hover:bg-slate-800/40 transition-colors"
+                        >
+                          {/* Left: Name + Value with Unit */}
+                          <div className="w-24">
+                            <span className="block text-[14px] font-medium text-gray-900 dark:text-white">
+                              {row.name}
+                            </span>
+                            <span className="block text-[12px] text-gray-500 dark:text-gray-400">
+                              {row.value}
+                            </span>
+                          </div>
+
+                          {/* Center: Status Pill Badge */}
+                          <div className="flex-1 flex justify-center px-1">
+                            <span
+                              className={`px-3 py-1 rounded-full text-[12px] font-medium ${
+                                getStatusBadge(row.statusType as WaterQualityStatus).className
+                              }`}
+                            >
+                              {row.statusText}
+                            </span>
+                          </div>
+
+                          {/* Right: IP Score */}
+                          <div className="w-8 text-right font-semibold text-[14px] text-gray-900 dark:text-white">
+                            {row.ipScore}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ======================================================= */}
+                  {/* 4. GRAFIK 4: Tren Parameter Kualitas Air (Bar w/ Zones) */}
+                  {/* ======================================================= */}
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-[14px] font-semibold text-gray-900 dark:text-white leading-snug">
+                          Tren Parameter Kualitas Air Hari Ini
+                        </h3>
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">
+                          Pantau perubahan nilai setiap parameter hari ini.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadData('Tren Parameter Baku Mutu')}
+                        title="Unduh Data Rasio Parameter"
+                        className={`min-h-[32px] min-w-[32px] p-1.5 border rounded-lg ${
+                          isDarkMode
+                            ? 'border-slate-700 hover:bg-slate-800 text-slate-300'
+                            : 'border-gray-200 hover:bg-gray-50 text-gray-600'
+                        } transition-colors flex items-center justify-center shadow-2xs cursor-pointer shrink-0`}
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div
+                      className={`p-2.5 rounded-xl border ${
+                        isDarkMode
+                          ? 'bg-slate-900/60 border-slate-800'
+                          : 'bg-slate-50/50 border-gray-100'
+                      }`}
+                    >
+                      <div className="flex h-56 pt-2">
+                        {/* Left Axis: "Indeks Pencemaran" + 4 Color Bands */}
+                        <div className="flex items-stretch gap-1 mr-2 shrink-0 select-none">
+                          {/* Vertical Title: "Indeks Pencemaran" */}
+                          <div className="flex items-center justify-center">
+                            <span
+                              className="text-[12px] text-gray-500 dark:text-gray-400 font-medium tracking-wide"
+                              style={{
+                                writingMode: 'vertical-rl',
+                                transform: 'rotate(180deg)',
+                              }}
+                            >
+                              Indeks Pencemaran
+                            </span>
+                          </div>
+
+                          {/* 4 Colored Bands (Berat, Sedang, Ringan, Baku Mutu) */}
+                          <div className="flex flex-col w-6 rounded-md overflow-hidden text-[12px] font-medium text-center leading-none shadow-2xs">
+                            <div
+                              className="flex-1 bg-red-100 text-red-700 flex items-center justify-center border-b border-white/60"
+                              style={{
+                                writingMode: 'vertical-rl',
+                                transform: 'rotate(180deg)',
+                              }}
+                            >
+                              Berat
+                            </div>
+                            <div
+                              className="flex-1 bg-amber-100 text-amber-700 flex items-center justify-center border-b border-white/60"
+                              style={{
+                                writingMode: 'vertical-rl',
+                                transform: 'rotate(180deg)',
+                              }}
+                            >
+                              Sedang
+                            </div>
+                            <div
+                              className="flex-1 bg-blue-100 text-blue-700 flex items-center justify-center border-b border-white/60"
+                              style={{
+                                writingMode: 'vertical-rl',
+                                transform: 'rotate(180deg)',
+                              }}
+                            >
+                              Ringan
+                            </div>
+                            <div
+                              className="flex-1 bg-emerald-100 text-emerald-800 flex items-center justify-center"
+                              style={{
+                                writingMode: 'vertical-rl',
+                                transform: 'rotate(180deg)',
+                              }}
+                            >
+                              Baku Mutu
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Chart Bars Area */}
+                        <div className="flex-1 flex flex-col justify-end">
+                          <div className="flex-1 flex items-end justify-around gap-2 px-1 border-b border-gray-200 dark:border-slate-700">
+                            {chart4Bars.map((bar) => {
+                              const heightPercent = Math.min(100, Math.max(14, (bar.value / 18) * 100));
+                              return (
+                                <div
+                                  key={bar.name}
+                                  className="flex-1 flex flex-col items-center justify-end h-full group"
+                                >
+                                  <span className="text-[12px] font-semibold text-gray-800 dark:text-slate-100 mb-1">
+                                    {bar.value.toFixed(1)}
+                                  </span>
+                                  <div
+                                    className="w-full max-w-[34px] rounded-t-lg transition-all duration-300 relative shadow-xs"
+                                    style={{
+                                      height: `${heightPercent}%`,
+                                      background: `linear-gradient(180deg, ${bar.color} 0%, ${bar.color}20 100%)`,
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* X-Axis Parameter Labels */}
+                          <div className="flex justify-around gap-2 px-1 pt-1.5 text-center">
+                            {chart4Bars.map((bar) => (
+                              <div
+                                key={bar.name}
+                                className="flex-1 text-[12px] font-medium text-gray-600 dark:text-slate-300 truncate"
+                                title={bar.name}
+                              >
+                                {bar.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footnote below bars matching Image 1 */}
+                      <div className="flex items-center gap-1.5 text-[12px] text-gray-500 dark:text-gray-400 pt-2.5 mt-1 border-t border-gray-100 dark:border-slate-800">
+                        <div className="w-3.5 h-3.5 rounded-full border border-gray-400 flex items-center justify-center text-[12px] font-serif shrink-0">
+                          i
+                        </div>
+                        <span>
+                          Indeks pencemaran ditentukan dari nilai ratio per parameter
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: PROFIL STASIUN (SESUAI GAMBAR KEDUA - SEMUA FONT INTER 12PX) */}
+              {activeStationTab === 'profil' && (
+                <div className="space-y-3.5 text-[12px] font-sans">
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">DAS</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[12px]">
+                      {selectedStation.das || 'Brantas'}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-gray-200 dark:border-slate-800">
-                    <span className="text-gray-500 dark:text-gray-400">DAS</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {selectedStation.das}
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">Last Update</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[12px]">
+                      {selectedStation.lastUpdate || '28/08/2026 14:02:57'}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-gray-200 dark:border-slate-800">
-                    <span className="text-gray-500 dark:text-gray-400">Kabupaten/Kota</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {selectedStation.city}
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">
+                      Nilai Indeks Pencemaran
+                    </span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[12px]">
+                      {selectedStation.ipScore.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-gray-200 dark:border-slate-800">
-                    <span className="text-gray-500 dark:text-gray-400">Provinsi</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {selectedStation.province}
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">
+                      Status Mutu Terkini
+                    </span>
+                    <span
+                      className={`px-3 py-0.5 rounded-full text-[12px] font-medium ${
+                        getStatusBadge(selectedStation.status).className
+                      }`}
+                    >
+                      {getStatusBadge(selectedStation.status).label}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-gray-200 dark:border-slate-800">
-                    <span className="text-gray-500 dark:text-gray-400">Koordinat</span>
-                    <span className="font-mono text-gray-900 dark:text-white">
-                      {selectedStation.lat.toFixed(4)}, {selectedStation.lng.toFixed(4)}
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">Lattitude</span>
+                    <span className="font-medium text-gray-900 dark:text-white font-mono text-[12px]">
+                      {selectedStation.lat.toFixed(14)}°
                     </span>
                   </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-gray-500 dark:text-gray-400">Tipe Sensor</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                      Telemetri Multi-Sensor Kontinyu
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">Longitude</span>
+                    <span className="font-medium text-gray-900 dark:text-white font-mono text-[12px]">
+                      {selectedStation.lng.toFixed(13)}°
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">Provinsi</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[12px]">
+                      {selectedStation.province || 'DI Yogyakarta'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">
+                      Kabupaten/Kota
+                    </span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[12px]">
+                      {selectedStation.city || 'Sleman'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">Kecamatan</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[12px]">
+                      {selectedStation.district || 'Gamping'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-0.5">
+                    <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">
+                      Kelurahan/Desa
+                    </span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[12px]">
+                      {selectedStation.subdistrict || 'Tlogoadi'}
                     </span>
                   </div>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => onSelectStation(null)}
-                  className="w-full min-h-[32px] h-8 px-4 border border-gray-300 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <span>Kembali ke Ringkasan Monitoring</span>
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         ) : (
           /* ======================================================================= */
           /* TAMPILAN DEFAULT MONITORING (KETIKA TIDAK ADA STASIUN YANG DIPILIH) */
           /* ======================================================================= */
-          <div className="space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
             {/* Heading Section: Monitoring */}
             <div>
               <h2
-                className={`text-xs font-bold ${
+                className={`text-[12px] font-semibold ${
                   isDarkMode ? 'text-slate-200' : 'text-gray-800'
                 } mb-2.5`}
               >
@@ -855,14 +1237,14 @@ Parameter:
                   >
                     <div>
                       <span
-                        className={`text-xs font-semibold ${
+                        className={`text-[12px] font-medium ${
                           isDarkMode ? 'text-slate-400' : 'text-gray-500'
                         } block`}
                       >
                         DAS
                       </span>
                       <span
-                        className={`text-sm font-bold ${
+                        className={`text-[16px] font-semibold ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}
                       >
@@ -889,14 +1271,14 @@ Parameter:
                   >
                     <div>
                       <span
-                        className={`text-xs font-semibold ${
+                        className={`text-[12px] font-medium ${
                           isDarkMode ? 'text-slate-400' : 'text-gray-500'
                         } block`}
                       >
                         Sungai
                       </span>
                       <span
-                        className={`text-sm font-bold ${
+                        className={`text-[16px] font-semibold ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}
                       >
@@ -926,14 +1308,14 @@ Parameter:
                   >
                     <div>
                       <span
-                        className={`text-xs font-semibold ${
+                        className={`text-[12px] font-medium ${
                           isDarkMode ? 'text-slate-400' : 'text-gray-500'
                         } block`}
                       >
                         Stasiun
                       </span>
                       <span
-                        className={`text-sm font-bold ${
+                        className={`text-[16px] font-semibold ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}
                       >
@@ -960,14 +1342,14 @@ Parameter:
                   >
                     <div>
                       <span
-                        className={`text-xs font-semibold ${
+                        className={`text-[12px] font-medium ${
                           isDarkMode ? 'text-slate-400' : 'text-gray-500'
                         } block`}
                       >
                         Provinsi
                       </span>
                       <span
-                        className={`text-sm font-bold ${
+                        className={`text-[16px] font-semibold ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}
                       >
@@ -997,14 +1379,14 @@ Parameter:
                   >
                     <div>
                       <span
-                        className={`text-xs font-semibold ${
+                        className={`text-[12px] font-medium ${
                           isDarkMode ? 'text-slate-400' : 'text-gray-500'
                         } block`}
                       >
                         Kabupaten/Kota
                       </span>
                       <span
-                        className={`text-sm font-bold ${
+                        className={`text-[16px] font-semibold ${
                           isDarkMode ? 'text-white' : 'text-gray-900'
                         }`}
                       >
@@ -1025,11 +1407,11 @@ Parameter:
               </div>
             </div>
 
-            {/* Section: Indeks Pencemaran tiap Stasiun */}
+            {/* Section: Indeks Pencemaran tiap Stasiun with Image 4 Icons */}
             <div className="pt-1">
               <div className="flex items-center justify-between mb-2">
                 <h2
-                  className={`text-xs font-bold ${
+                  className={`text-[12px] font-semibold ${
                     isDarkMode ? 'text-slate-200' : 'text-gray-800'
                   }`}
                 >
@@ -1039,14 +1421,14 @@ Parameter:
                   <button
                     type="button"
                     onClick={() => onSelectStatusFilter('all')}
-                    className="min-h-[32px] text-xs text-[#ff6900] hover:underline cursor-pointer font-medium flex items-center"
+                    className="min-h-[32px] text-[12px] text-[#ff6900] hover:underline cursor-pointer font-medium flex items-center"
                   >
                     Reset Filter
                   </button>
                 )}
               </div>
 
-              {/* List of Statuses */}
+              {/* List of Statuses using Image 4 custom icon style */}
               <div className="space-y-1.5">
                 {STATUS_SUMMARIES.map((item) => {
                   const isSelected = selectedStatusFilter === item.status;
@@ -1061,29 +1443,43 @@ Parameter:
                           ? `${item.bgColor} ${item.borderColor} ring-1 ring-[#ff6900]`
                           : isDarkMode
                           ? 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
-                          : 'bg-gray-50/70 border-gray-200/80 hover:border-gray-300'
+                          : 'bg-white border-gray-200/80 hover:border-gray-300'
                       }`}
                       title={`Klik untuk filter status ${item.label}`}
                     >
                       <div className="flex items-center gap-2.5">
-                        {/* Badge Icon */}
+                        {/* Custom Badge Icon matching Image 4 */}
                         <div
-                          className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                           style={{
-                            backgroundColor: `${item.color}15`,
-                            color: item.color,
+                            backgroundColor:
+                              item.status === 'baku_mutu'
+                                ? '#E8F8EE'
+                                : item.status === 'cemar_ringan'
+                                ? '#EBF2FE'
+                                : item.status === 'cemar_sedang'
+                                ? '#FEF9E8'
+                                : item.status === 'cemar_berat'
+                                ? '#FEECEC'
+                                : '#F1F3F5',
+                            color:
+                              item.status === 'baku_mutu'
+                                ? '#22c55e'
+                                : item.status === 'cemar_ringan'
+                                ? '#3b82f6'
+                                : item.status === 'cemar_sedang'
+                                ? '#eab308'
+                                : item.status === 'cemar_berat'
+                                ? '#ef4444' // Warna merah
+                                : '#64748b', // Tanpa data circle with X
                           }}
                         >
-                          {item.status === 'baku_mutu' && <Droplets className="w-4 h-4" />}
-                          {item.status === 'cemar_ringan' && <Droplets className="w-4 h-4" />}
-                          {item.status === 'cemar_sedang' && <Droplets className="w-4 h-4" />}
-                          {item.status === 'cemar_berat' && <AlertTriangle className="w-4 h-4" />}
-                          {item.status === 'tanpa_data' && <HelpCircle className="w-4 h-4" />}
+                          <WaterQualityStatusIcon status={item.status} className="w-5 h-5" />
                         </div>
 
                         <span
-                          className={`text-xs font-medium ${
-                            isDarkMode ? 'text-slate-200' : 'text-gray-800'
+                          className={`text-[14px] font-normal ${
+                            isDarkMode ? 'text-slate-200' : 'text-[#475467]'
                           }`}
                         >
                           {item.label}
@@ -1092,14 +1488,14 @@ Parameter:
 
                       <div className="flex items-center gap-1.5">
                         <span
-                          className={`text-xs font-bold ${
+                          className={`text-[14px] font-semibold ${
                             isDarkMode ? 'text-white' : 'text-gray-900'
                           }`}
                         >
                           {item.count}
                         </span>
                         <span
-                          className={`text-xs ${
+                          className={`text-[12px] ${
                             isDarkMode ? 'text-slate-400' : 'text-gray-400'
                           }`}
                         >
@@ -1116,23 +1512,23 @@ Parameter:
       </div>
 
       {/* ========================================================================= */}
-      {/* BAGIAN 3: PERATURAN INDEKS PENCEMARAN (Warna abu-abu seperti Bagian 1, Separator border-t #E4E4E7) */}
+      {/* BAGIAN 3: PERATURAN INDEKS PENCEMARAN (SESUAI GAMBAR KETIGA - UKURAN 12PX) */}
       {/* ========================================================================= */}
       <div
         className={`p-3.5 ${
           isDarkMode ? 'bg-[#0f172a]' : 'bg-[#f4f6f8]'
-        } border-t border-[#E4E4E7] dark:border-slate-800 shrink-0`}
+        } border-t border-[#E4E4E7] dark:border-slate-800 shrink-0 font-sans`}
       >
         {!isRegulationExpanded ? (
-          /* Collapsed State: exact design as in Image 1 & Image 2 */
+          /* Collapsed State (Sesuai Gambar 3: Judul & Lihat Detail 12px) */
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full border border-blue-500 flex items-center justify-center text-blue-500 font-serif font-bold text-xs">
+              <div className="w-4 h-4 rounded-full border border-blue-500 flex items-center justify-center text-blue-500 font-serif font-semibold text-[12px] shrink-0">
                 i
               </div>
               <span
-                className={`text-xs font-semibold ${
-                  isDarkMode ? 'text-slate-100' : 'text-gray-800'
+                className={`text-[12px] font-semibold ${
+                  isDarkMode ? 'text-slate-100' : 'text-gray-900'
                 }`}
               >
                 Peraturan Indeks Pencemaran
@@ -1141,46 +1537,40 @@ Parameter:
             <button
               type="button"
               onClick={() => setIsRegulationExpanded(true)}
-              className="min-h-[32px] text-xs font-semibold text-[#ff6900] hover:text-[#e05d00] cursor-pointer flex items-center"
+              className="min-h-[32px] text-[12px] font-semibold text-[#ff6900] hover:text-[#e05d00] cursor-pointer flex items-center"
             >
               Lihat Detail
             </button>
           </div>
         ) : (
-          /* Expanded State: with description and "Tutup" button */
-          <div
-            className={`p-3 rounded-xl border ${
-              isDarkMode
-                ? 'bg-slate-800/90 border-slate-700'
-                : 'bg-white border-blue-200'
-            } shadow-2xs space-y-1.5`}
-          >
-            <div className="flex items-start justify-between gap-1">
+          /* Expanded State matching Image 3 (flat text directly in gray background - 12px) */
+          <div className="space-y-1.5 animate-in fade-in duration-150">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full border border-blue-500 flex items-center justify-center text-blue-500 font-serif font-bold text-xs">
+                <div className="w-4 h-4 rounded-full border border-blue-500 flex items-center justify-center text-blue-500 font-serif font-semibold text-[12px] shrink-0">
                   i
                 </div>
-                <button
-                  type="button"
-                  onClick={onOpenRegulationInfo}
-                  className={`min-h-[32px] text-xs font-bold ${
+                <span
+                  className={`text-[12px] font-semibold ${
                     isDarkMode ? 'text-slate-100' : 'text-gray-900'
-                  } hover:underline text-left cursor-pointer flex items-center`}
+                  }`}
                 >
                   Peraturan Indeks Pencemaran
-                </button>
+                </span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsRegulationExpanded(false)}
-                className="min-h-[32px] text-xs font-semibold text-[#ff6900] hover:text-[#e05d00] hover:underline cursor-pointer flex items-center"
+                className="min-h-[32px] text-[12px] font-semibold text-[#ff6900] hover:text-[#e05d00] cursor-pointer flex items-center"
               >
                 Tutup
               </button>
             </div>
+
+            {/* Description text matching Image 3 (12px) */}
             <p
-              className={`text-xs leading-relaxed ${
-                isDarkMode ? 'text-slate-300' : 'text-gray-700'
+              className={`text-[12px] leading-relaxed pl-6 ${
+                isDarkMode ? 'text-slate-300' : 'text-gray-600'
               }`}
             >
               Indeks adalah rasio konsentrasi parameter terhadap baku mutu air sungai kelas II Lampiran VI Peraturan Pemerintah Nomor 22 Tahun 2021
