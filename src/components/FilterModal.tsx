@@ -97,7 +97,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   onClick={() => setTempStatus(item.status)}
                   className={`flex items-center justify-between p-2.5 rounded-xl border text-xs transition-colors cursor-pointer ${
                     tempStatus === item.status
-                      ? `${item.bgColor} ${item.borderColor} font-semibold ring-1 ring-emerald-500`
+                      ? `${item.bgColor} ${item.borderColor} font-semibold ring-1 ring-[#ff6900]`
                       : 'border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                   }`}
                 >
@@ -108,7 +108,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     />
                     <span>{item.label}</span>
                   </div>
-                  {tempStatus === item.status && <Check className="w-4 h-4 text-emerald-600" />}
+                  {tempStatus === item.status && <Check className="w-4 h-4 text-[#ff6900]" />}
                 </button>
               ))}
             </div>
@@ -122,7 +122,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             <select
               value={tempProvince}
               onChange={(e) => setTempProvince(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#ff6900]"
             >
               <option value="all">Semua Provinsi (Seluruh Indonesia)</option>
               {provinces.map((prov) => (
@@ -141,7 +141,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             <select
               value={tempDas}
               onChange={(e) => setTempDas(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-[#ff6900]"
             >
               <option value="all">Semua DAS</option>
               {dases.map((d) => (
@@ -175,7 +175,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             <button
               type="button"
               onClick={handleApply}
-              className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs cursor-pointer"
+              className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] transition-colors shadow-xs cursor-pointer"
             >
               Terapkan
             </button>

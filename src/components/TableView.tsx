@@ -198,7 +198,7 @@ export const TableView: React.FC<TableViewProps> = ({
 
           <button
             onClick={onSwitchToDashboard}
-            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
             <MapPin className="w-3.5 h-3.5" />
             <span>Buka di Peta</span>

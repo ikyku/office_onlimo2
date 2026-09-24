@@ -158,7 +158,7 @@ export default function App() {
                   onClick={() => setIsMobileSidebarOpen(true)}
                   className="flex items-center gap-2 px-3.5 py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md text-gray-800 dark:text-white rounded-full shadow-lg border border-gray-200 dark:border-slate-700 text-xs font-bold cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition-transform active:scale-95"
                 >
-                  <BarChart3 className="w-4 h-4 text-[#ea580c]" />
+                  <BarChart3 className="w-4 h-4 text-[#ff6900]" />
                   <span>Statistik Monitoring</span>
                 </button>
               </div>
@@ -193,6 +193,7 @@ export default function App() {
                 isRefreshing={isRefreshing}
                 onOpenRegulationInfo={() => setIsRegulationModalOpen(true)}
                 onResetFilters={handleResetAllFilters}
+                isDarkMode={isDarkMode}
               />
             </div>
 
@@ -204,13 +205,23 @@ export default function App() {
                   onClick={() => setIsMobileSidebarOpen(false)}
                 />
                 <div className="relative ml-auto w-5/6 max-w-sm h-full bg-[#f4f6f8] dark:bg-slate-900 shadow-2xl flex flex-col z-50">
-                  <div className="p-3 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
-                    <span className="text-xs font-bold text-gray-800 dark:text-white">
+                  <div
+                    className={`p-3 border-b ${
+                      isDarkMode
+                        ? 'bg-[#0f172a] border-slate-800 text-white'
+                        : 'bg-white border-gray-200 text-gray-900'
+                    } flex items-center justify-between`}
+                  >
+                    <span className="text-xs font-bold">
                       Statistik & Pemantauan
                     </span>
                     <button
                       onClick={() => setIsMobileSidebarOpen(false)}
-                      className="p-1 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-white"
+                      className={`p-1 rounded-lg ${
+                        isDarkMode
+                          ? 'text-gray-400 hover:text-white'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -241,6 +252,7 @@ export default function App() {
                         setIsRegulationModalOpen(true);
                       }}
                       onResetFilters={handleResetAllFilters}
+                      isDarkMode={isDarkMode}
                     />
                   </div>
                 </div>

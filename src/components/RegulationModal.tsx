@@ -138,7 +138,7 @@ export const RegulationModal: React.FC<RegulationModalProps> = ({
 
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+            className="px-4 py-1.5 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
           >
             Mengerti
           </button>

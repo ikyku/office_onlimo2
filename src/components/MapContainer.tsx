@@ -244,15 +244,23 @@ export const MapContainer: React.FC<MapContainerProps> = ({
       )}
 
       {/* Floating Toolbar: Left Vertical Control Bar */}
-      <div className="absolute top-4 left-4 z-20 flex flex-col bg-white dark:bg-slate-800 rounded-xl shadow-md border border-gray-200/80 dark:border-slate-700 p-1 gap-1">
+      <div
+        className={`absolute top-4 left-4 z-20 flex flex-col ${
+          isDarkMode
+            ? 'bg-slate-800/95 border-slate-700 text-slate-200'
+            : 'bg-white/95 border-gray-200/80 text-gray-700'
+        } rounded-xl shadow-md border p-1 gap-1 backdrop-blur-xs`}
+      >
         {/* Layer Selector */}
         <div className="relative">
           <button
             onClick={() => setShowLayerMenu(!showLayerMenu)}
             className={`p-2 rounded-lg transition-colors cursor-pointer ${
               showLayerMenu
-                ? 'bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-400'
-                : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700/60'
+                ? 'bg-orange-50 text-[#ff6900]'
+                : isDarkMode
+                ? 'text-slate-300 hover:bg-slate-700/60'
+                : 'text-gray-600 hover:bg-gray-100'
             }`}
             title="Pilih Lapisan Peta (Basemap)"
           >
@@ -261,8 +269,14 @@ export const MapContainer: React.FC<MapContainerProps> = ({
 
           {/* Layer Flyout Menu */}
           {showLayerMenu && (
-            <div className="absolute left-full top-0 ml-2 w-44 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl p-1.5 z-30 text-xs">
-              <span className="block px-2.5 py-1 text-xs font-bold uppercase text-gray-400 dark:text-slate-400">
+            <div
+              className={`absolute left-full top-0 ml-2 w-44 ${
+                isDarkMode
+                  ? 'bg-slate-800 border-slate-700 text-slate-200 shadow-2xl'
+                  : 'bg-white border-gray-200 text-gray-700 shadow-xl'
+              } border rounded-xl p-1.5 z-30 text-xs`}
+            >
+              <span className="block px-2.5 py-1 text-xs font-bold uppercase text-gray-400">
                 Pilih Tipe Peta
               </span>
               <button
@@ -270,40 +284,48 @@ export const MapContainer: React.FC<MapContainerProps> = ({
                   setActiveBasemap('positron');
                   setShowLayerMenu(false);
                 }}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200"
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
+                  isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
+                }`}
               >
                 <span>Positron (Terang)</span>
-                {activeBasemap === 'positron' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                {activeBasemap === 'positron' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
               </button>
               <button
                 onClick={() => {
                   setActiveBasemap('dark');
                   setShowLayerMenu(false);
                 }}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200"
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
+                  isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
+                }`}
               >
                 <span>Dark Matter (Gelap)</span>
-                {activeBasemap === 'dark' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                {activeBasemap === 'dark' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
               </button>
               <button
                 onClick={() => {
                   setActiveBasemap('satellite');
                   setShowLayerMenu(false);
                 }}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200"
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
+                  isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
+                }`}
               >
                 <span>Satelit Esri</span>
-                {activeBasemap === 'satellite' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                {activeBasemap === 'satellite' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
               </button>
               <button
                 onClick={() => {
                   setActiveBasemap('streets');
                   setShowLayerMenu(false);
                 }}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200"
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
+                  isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
+                }`}
               >
                 <span>OpenStreetMap</span>
-                {activeBasemap === 'streets' && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                {activeBasemap === 'streets' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
               </button>
             </div>
           )}

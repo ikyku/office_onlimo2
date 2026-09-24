@@ -70,10 +70,16 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="h-16 w-full bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-3 md:px-5 shadow-xs z-30 transition-colors">
+    <header
+      className={`h-16 w-full ${
+        isDarkMode
+          ? 'bg-[#0f172a] border-slate-800 text-white'
+          : 'bg-white border-gray-200 text-gray-900'
+      } border-b flex items-center justify-between px-3 md:px-5 shadow-xs z-30 transition-colors duration-200`}
+    >
       {/* Left: KLHK / BPLH Branding */}
       <div className="flex items-center gap-3">
-        {/* Emblem Badge matching the circular navy logo in screenshot */}
+        {/* Emblem Badge */}
         <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#0a2540] text-emerald-400 shadow-sm border border-slate-700 shrink-0">
           <div className="flex flex-col items-center justify-center leading-none">
             <Droplets className="w-5 h-5 text-emerald-400 stroke-[2.2]" />
@@ -83,17 +89,29 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Title & Subtitle */}
         <div className="flex flex-col">
-          <h1 className="text-sm font-bold text-gray-900 dark:text-white leading-tight line-clamp-1">
+          <h1
+            className={`text-sm font-bold ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            } leading-tight line-clamp-1`}
+          >
             Kementerian Lingkungan Hidup / Badan Pengendalian Lingkungan Hidup
           </h1>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+            <span
+              className={`text-xs ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-500'
+              } font-medium`}
+            >
               Online Monitoring
             </span>
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+            <span
+              className={`text-xs font-semibold ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}
+            >
               (ONLIMO)
             </span>
-            <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="hidden sm:inline-block text-xs text-emerald-600 dark:text-emerald-400 font-medium">
               Live
             </span>
@@ -104,18 +122,33 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Right: Actions, Ticker, View Toggle, Login, Dark Mode */}
       <div className="flex items-center gap-2 md:gap-3">
         {/* Real-time Indonesian clock display */}
-        <div className="hidden lg:flex items-center text-xs font-medium text-gray-600 dark:text-slate-300 font-mono tracking-tight bg-gray-50 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-md border border-gray-200/80 dark:border-slate-700">
+        <div
+          className={`hidden lg:flex items-center text-xs font-medium ${
+            isDarkMode
+              ? 'text-slate-300 bg-slate-800/80 border-slate-700'
+              : 'text-gray-700 bg-gray-50 border-gray-200/90'
+          } font-mono tracking-tight px-2.5 py-1.5 rounded-md border`}
+        >
           {currentDateTime || 'Memuat waktu...'}
         </div>
 
         {/* View Mode Switcher: Dashboard / Table */}
-        <div className="flex items-center bg-gray-100 dark:bg-slate-800 p-0.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs font-medium">
+        <div
+          className={`flex items-center ${
+            isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-gray-200'
+          } p-0.5 rounded-lg border text-xs font-medium`}
+        >
           <button
+            type="button"
             onClick={() => setViewMode('dashboard')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all cursor-pointer ${
               viewMode === 'dashboard'
-                ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-xs font-semibold'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
+                ? isDarkMode
+                  ? 'bg-slate-700 text-white shadow-xs font-semibold'
+                  : 'bg-white text-gray-900 shadow-xs font-semibold'
+                : isDarkMode
+                ? 'text-slate-400 hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
             title="Tampilan Peta Dashboard"
           >
@@ -124,11 +157,16 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <button
+            type="button"
             onClick={() => setViewMode('table')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all cursor-pointer ${
               viewMode === 'table'
-                ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-xs font-semibold'
-                : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
+                ? isDarkMode
+                  ? 'bg-slate-700 text-white shadow-xs font-semibold'
+                  : 'bg-white text-gray-900 shadow-xs font-semibold'
+                : isDarkMode
+                ? 'text-slate-400 hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
             title="Tampilan Tabel Data"
           >
@@ -137,10 +175,11 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* "Masuk" (Login) Button - Orange themed matching screenshot */}
+        {/* "Masuk" (Login) Button - Primary brand color #ff6900 */}
         <button
+          type="button"
           onClick={onOpenLogin}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#E65100] hover:bg-[#D84315] active:bg-[#BF360C] text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
           title="Masuk ke Akun ONLIMO"
         >
           <LogIn className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -149,22 +188,32 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Dark Mode Toggle */}
         <button
+          type="button"
           onClick={toggleDarkMode}
-          className="p-1.5 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+            isDarkMode
+              ? 'text-amber-400 hover:bg-slate-800'
+              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          }`}
           aria-label="Toggle Dark Mode"
           title={isDarkMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
         >
           {isDarkMode ? (
             <Sun className="w-4 h-4 text-amber-400" />
           ) : (
-            <Moon className="w-4 h-4" />
+            <Moon className="w-4 h-4 text-gray-600" />
           )}
         </button>
 
         {/* Fullscreen Button */}
         <button
+          type="button"
           onClick={toggleFullscreen}
-          className="hidden md:flex p-1.5 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+          className={`hidden md:flex p-1.5 rounded-lg transition-colors cursor-pointer ${
+            isDarkMode
+              ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+          }`}
           aria-label="Toggle Fullscreen"
           title="Layar Penuh"
         >
@@ -178,8 +227,13 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Mobile Sidebar Toggle Button */}
         {onToggleSidebarMobile && (
           <button
+            type="button"
             onClick={onToggleSidebarMobile}
-            className="md:hidden p-1.5 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
+            className={`md:hidden p-1.5 rounded-lg cursor-pointer ${
+              isDarkMode
+                ? 'text-slate-300 hover:bg-slate-800'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
             aria-label="Toggle Sidebar Menu"
             title="Buka Panel Statistik"
           >

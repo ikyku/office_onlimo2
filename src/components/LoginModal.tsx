@@ -123,7 +123,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@menlhk.go.id atau NIP"
-                className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-gray-900 dark:text-white"
+                className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ff6900] text-gray-900 dark:text-white"
                 required
               />
             </div>
@@ -153,7 +153,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Masukkan kata sandi"
-                className="w-full pl-9 pr-9 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-gray-900 dark:text-white"
+                className="w-full pl-9 pr-9 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ff6900] text-gray-900 dark:text-white"
                 required
               />
               <button
@@ -185,7 +185,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => setCaptchaInput(e.target.value)}
                 placeholder="Ketik kode di kiri"
                 maxLength={5}
-                className="flex-1 px-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 uppercase tracking-widest text-gray-900 dark:text-white font-mono"
+                className="flex-1 px-3 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ff6900] uppercase tracking-widest text-gray-900 dark:text-white font-mono"
                 required
               />
             </div>
@@ -198,7 +198,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                className="rounded border-gray-300 text-[#ff6900] focus:ring-[#ff6900]"
               />
               <span>Ingat perangkat ini</span>
             </label>
@@ -208,7 +208,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 bg-[#E65100] hover:bg-[#D84315] text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full py-2.5 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
