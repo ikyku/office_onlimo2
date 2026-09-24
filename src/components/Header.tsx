@@ -141,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('dashboard')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all cursor-pointer ${
+            className={`min-h-[32px] h-8 flex items-center gap-1.5 px-3 rounded-md transition-all cursor-pointer ${
               viewMode === 'dashboard'
                 ? isDarkMode
                   ? 'bg-slate-700 text-white shadow-xs font-semibold'
@@ -159,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('table')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-all cursor-pointer ${
+            className={`min-h-[32px] h-8 flex items-center gap-1.5 px-3 rounded-md transition-all cursor-pointer ${
               viewMode === 'table'
                 ? isDarkMode
                   ? 'bg-slate-700 text-white shadow-xs font-semibold'
@@ -179,7 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           onClick={onOpenLogin}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
+          className="min-h-[32px] h-8 flex items-center gap-1.5 px-3.5 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
           title="Masuk ke Akun ONLIMO"
         >
           <LogIn className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -190,7 +190,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           onClick={toggleDarkMode}
-          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+          className={`min-h-[32px] min-w-[32px] h-8 w-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
             isDarkMode
               ? 'text-amber-400 hover:bg-slate-800'
               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -209,7 +209,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           onClick={toggleFullscreen}
-          className={`hidden md:flex p-1.5 rounded-lg transition-colors cursor-pointer ${
+          className={`hidden md:flex min-h-[32px] min-w-[32px] h-8 w-8 items-center justify-center rounded-lg transition-colors cursor-pointer ${
             isDarkMode
               ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -229,7 +229,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={onToggleSidebarMobile}
-            className={`md:hidden p-1.5 rounded-lg cursor-pointer ${
+            className={`md:hidden min-h-[32px] min-w-[32px] h-8 w-8 flex items-center justify-center rounded-lg cursor-pointer ${
               isDarkMode
                 ? 'text-slate-300 hover:bg-slate-800'
                 : 'text-gray-700 hover:bg-gray-100'

@@ -63,6 +63,30 @@ export const STATUS_SUMMARIES: StatusSummary[] = [
 
 export const MOCK_STATIONS: Station[] = [
   {
+    id: 'STA-076',
+    code: 'MTI-84NVSYU3N231',
+    name: 'Stasiun KLHK 76',
+    das: 'DAS Ciliwung',
+    river: 'Sungai Ciliwung',
+    province: 'DKI Jakarta',
+    city: 'Kota Jakarta Selatan',
+    lat: -6.2297,
+    lng: 106.8295,
+    status: 'baku_mutu',
+    ipScore: 0.82,
+    badgeNumber: '999',
+    parameters: {
+      ph: 7.2,
+      do: 6.8,
+      bod: 2.1,
+      cod: 14.8,
+      tss: 6.9,
+      temp: 27.8,
+    },
+    lastUpdate: '28/08/2026 14:02:57',
+    isOnline: true,
+  },
+  {
     id: 'STA-001',
     code: '1101-DELI-01',
     name: 'Stasiun Deli - Belawan',

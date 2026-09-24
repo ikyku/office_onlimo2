@@ -190,7 +190,7 @@ export const TableView: React.FC<TableViewProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-2xs cursor-pointer"
+            className="min-h-[32px] h-8 flex items-center gap-1.5 px-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-2xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-gray-500" />
             <span>Ekspor CSV</span>
@@ -198,7 +198,7 @@ export const TableView: React.FC<TableViewProps> = ({
 
           <button
             onClick={onSwitchToDashboard}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            className="min-h-[32px] h-8 flex items-center gap-1.5 px-3 bg-[#ff6900] hover:bg-[#e05d00] active:bg-[#c75300] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
             <MapPin className="w-3.5 h-3.5" />
             <span>Buka di Peta</span>
@@ -375,7 +375,7 @@ export const TableView: React.FC<TableViewProps> = ({
                           onSelectStation(station);
                           onSwitchToDashboard();
                         }}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 rounded-md transition-colors cursor-pointer"
+                        className="inline-flex min-h-[32px] h-8 items-center gap-1 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 rounded-md transition-colors cursor-pointer"
                         title="Tinjau stasiun di peta"
                       >
                         <span>Tinjau</span>
@@ -411,7 +411,7 @@ export const TableView: React.FC<TableViewProps> = ({
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-1 rounded-md border border-gray-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
+              className="min-h-[32px] min-w-[32px] h-8 w-8 flex items-center justify-center rounded-md border border-gray-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -421,7 +421,7 @@ export const TableView: React.FC<TableViewProps> = ({
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-1 rounded-md border border-gray-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
+              className="min-h-[32px] min-w-[32px] h-8 w-8 flex items-center justify-center rounded-md border border-gray-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

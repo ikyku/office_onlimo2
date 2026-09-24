@@ -27,6 +27,7 @@ export default function App() {
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isRegulationModalOpen, setIsRegulationModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -156,7 +157,7 @@ export default function App() {
               <div className="md:hidden absolute bottom-4 left-4 z-20">
                 <button
                   onClick={() => setIsMobileSidebarOpen(true)}
-                  className="flex items-center gap-2 px-3.5 py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md text-gray-800 dark:text-white rounded-full shadow-lg border border-gray-200 dark:border-slate-700 text-xs font-bold cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition-transform active:scale-95"
+                  className="min-h-[32px] h-9 flex items-center gap-2 px-3.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md text-gray-800 dark:text-white rounded-full shadow-lg border border-gray-200 dark:border-slate-700 text-xs font-bold cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition-transform active:scale-95"
                 >
                   <BarChart3 className="w-4 h-4 text-[#ff6900]" />
                   <span>Statistik Monitoring</span>
@@ -269,11 +270,13 @@ export default function App() {
         )}
       </main>
 
-      {/* Station Detail Modal */}
-      <StationDetailModal
-        station={selectedStation}
-        onClose={() => setSelectedStation(null)}
-      />
+      {/* Station Detail Modal (for external pop-out inspection if needed) */}
+      {isDetailModalOpen && (
+        <StationDetailModal
+          station={selectedStation}
+          onClose={() => setIsDetailModalOpen(false)}
+        />
+      )}
 
       {/* Login Modal */}
       <LoginModal

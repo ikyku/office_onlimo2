@@ -16,6 +16,14 @@
   * {
     box-sizing: border-box;
   }
+  button {
+    min-height: 32px;
+  }
+}
+
+/* Dark mode tiles filter for OpenStreetMap without API key watermark */
+.dark-map-tiles .leaflet-tile-pane {
+  filter: brightness(0.7) invert(1) contrast(2) hue-rotate(200deg) saturate(0.35);
 }
 
 /* Custom speech-bubble teardrop marker matching ONLIMO UI */

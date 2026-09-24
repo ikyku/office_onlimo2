@@ -22,7 +22,7 @@ interface MapContainerProps {
   onOpenRegulationInfo: () => void;
 }
 
-type BasemapType = 'positron' | 'dark' | 'satellite' | 'streets';
+type BasemapType = 'streets' | 'satellite' | 'topo' | 'canvas';
 
 export const MapContainer: React.FC<MapContainerProps> = ({
   filteredStations,
@@ -36,41 +36,31 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
-  const [activeBasemap, setActiveBasemap] = useState<BasemapType>('positron');
+  // OpenStreetMap is default as requested to avoid "API KEY REQUIRED" watermark
+  const [activeBasemap, setActiveBasemap] = useState<BasemapType>('streets');
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [showGridOverlay, setShowGridOverlay] = useState(false);
   const [splitViewActive, setSplitViewActive] = useState(false);
 
-  // Basemap URLs
+  // Basemap URLs (Public, fast, free, NO API key required)
   const basemapUrls: Record<BasemapType, { url: string; subdomains?: string; attribution: string }> = {
-    positron: {
-      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-      subdomains: 'abcd',
-      attribution: '&copy; CartoDB &copy; OpenStreetMap contributors',
-    },
-    dark: {
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      subdomains: 'abcd',
-      attribution: '&copy; CartoDB &copy; OpenStreetMap contributors',
+    streets: {
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: '&copy; OpenStreetMap contributors',
     },
     satellite: {
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       attribution: '&copy; Esri &copy; DigitalGlobe',
     },
-    streets: {
-      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution: '&copy; OpenStreetMap contributors',
+    topo: {
+      url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+      attribution: '&copy; OpenTopoMap contributors',
+    },
+    canvas: {
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      attribution: '&copy; Esri World Light Gray',
     },
   };
-
-  // Sync basemap with dark mode if user hasn't explicitly chosen satellite
-  useEffect(() => {
-    if (activeBasemap === 'positron' && isDarkMode) {
-      setActiveBasemap('dark');
-    } else if (activeBasemap === 'dark' && !isDarkMode) {
-      setActiveBasemap('positron');
-    }
-  }, [isDarkMode]);
 
   // Initialize Map
   useEffect(() => {
@@ -215,7 +205,10 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   return (
     <div className="relative w-full h-full overflow-hidden flex-1 select-none">
       {/* Map DOM node */}
-      <div ref={mapElementRef} className="w-full h-full z-0" />
+      <div
+        ref={mapElementRef}
+        className={`w-full h-full z-0 ${isDarkMode && activeBasemap === 'streets' ? 'dark-map-tiles' : ''}`}
+      />
 
       {/* Grid overlay visualization when enabled */}
       {showGridOverlay && (
@@ -281,34 +274,22 @@ export const MapContainer: React.FC<MapContainerProps> = ({
               </span>
               <button
                 onClick={() => {
-                  setActiveBasemap('positron');
+                  setActiveBasemap('streets');
                   setShowLayerMenu(false);
                 }}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
+                className={`w-full min-h-[32px] flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
                   isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
                 }`}
               >
-                <span>Positron (Terang)</span>
-                {activeBasemap === 'positron' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
-              </button>
-              <button
-                onClick={() => {
-                  setActiveBasemap('dark');
-                  setShowLayerMenu(false);
-                }}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
-                  isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
-                }`}
-              >
-                <span>Dark Matter (Gelap)</span>
-                {activeBasemap === 'dark' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
+                <span>OpenStreetMap (Default)</span>
+                {activeBasemap === 'streets' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
               </button>
               <button
                 onClick={() => {
                   setActiveBasemap('satellite');
                   setShowLayerMenu(false);
                 }}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
+                className={`w-full min-h-[32px] flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
                   isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
                 }`}
               >
@@ -317,15 +298,27 @@ export const MapContainer: React.FC<MapContainerProps> = ({
               </button>
               <button
                 onClick={() => {
-                  setActiveBasemap('streets');
+                  setActiveBasemap('topo');
                   setShowLayerMenu(false);
                 }}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
+                className={`w-full min-h-[32px] flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
                   isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
                 }`}
               >
-                <span>OpenStreetMap</span>
-                {activeBasemap === 'streets' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
+                <span>OpenTopoMap</span>
+                {activeBasemap === 'topo' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
+              </button>
+              <button
+                onClick={() => {
+                  setActiveBasemap('canvas');
+                  setShowLayerMenu(false);
+                }}
+                className={`w-full min-h-[32px] flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
+                  isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
+                }`}
+              >
+                <span>Esri Light Canvas</span>
+                {activeBasemap === 'canvas' && <Check className="w-3.5 h-3.5 text-[#ff6900]" />}
               </button>
             </div>
           )}
