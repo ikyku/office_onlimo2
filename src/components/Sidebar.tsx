@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Station, WaterQualityStatus } from '../types/onlimo';
 import { INITIAL_METRICS, STATUS_SUMMARIES } from '../data/mockStations';
+import { WeatherStationBadge } from './WeatherStationBadge';
 
 interface SidebarProps {
   stations: Station[];
@@ -38,47 +39,13 @@ interface SidebarProps {
   isDarkMode: boolean;
 }
 
-// Custom status icon matching user's Image 4
+// Weather Station badge icon matching the uploaded frames & existing green badge
 export const WaterQualityStatusIcon: React.FC<{
   status: WaterQualityStatus | string;
   className?: string;
-}> = ({ status, className = 'w-4 h-4' }) => {
-  if (status === 'tanpa_data') {
-    // Circle with X inside matching Image 4
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-      >
-        <circle cx="12" cy="12" r="8.5" />
-        <path d="M8.5 8.5l7 7" />
-        <path d="M15.5 8.5l-7 7" />
-      </svg>
-    );
-  }
-
-  // Waterdrop outline with 3 vertical wavy lines inside matching Image 4
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M12 2.8C12 2.8 5.2 10.8 5.2 15.3A6.8 6.8 0 0 0 18.8 15.3C18.8 10.8 12 2.8 12 2.8Z" />
-      <path d="M11 13c.4.6.4 1.3 0 1.9s-.4 1.3 0 1.9" strokeWidth="1.6" />
-      <path d="M13.5 13c.4.6.4 1.3 0 1.9s-.4 1.3 0 1.9" strokeWidth="1.6" />
-      <path d="M16 13c.4.6.4 1.3 0 1.9s-.4 1.3 0 1.9" strokeWidth="1.6" />
-    </svg>
-  );
+  size?: number;
+}> = ({ status, className = '', size = 18 }) => {
+  return <WeatherStationBadge status={status} size={size} className={className} />;
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -598,11 +565,12 @@ Waktu Unduh: ${new Date().toISOString()}
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-slate-800 text-[12px]">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full font-medium text-[12px] ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-medium text-[12px] ${
                         getStatusBadge(selectedStation.status).className
                       }`}
                     >
-                      {getStatusBadge(selectedStation.status).label}
+                      <WeatherStationBadge status={selectedStation.status} size={16} />
+                      <span>{getStatusBadge(selectedStation.status).label}</span>
                     </span>
                     <span className="font-semibold text-gray-900 dark:text-white text-[14px]">
                       {selectedStation.ipScore.toFixed(2)}
@@ -1164,14 +1132,14 @@ Waktu Unduh: ${new Date().toISOString()}
                   <div className="flex justify-between items-center py-0.5">
                     <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">Lattitude</span>
                     <span className="font-medium text-gray-900 dark:text-white font-mono text-[12px]">
-                      {selectedStation.lat.toFixed(14)}°
+                      {selectedStation.displayLat ?? `${selectedStation.lat.toFixed(14)}°`}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center py-0.5">
                     <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">Longitude</span>
                     <span className="font-medium text-gray-900 dark:text-white font-mono text-[12px]">
-                      {selectedStation.lng.toFixed(13)}°
+                      {selectedStation.displayLng ?? `${selectedStation.lng.toFixed(13)}°`}
                     </span>
                   </div>
 
@@ -1448,38 +1416,12 @@ Waktu Unduh: ${new Date().toISOString()}
                       title={`Klik untuk filter status ${item.label}`}
                     >
                       <div className="flex items-center gap-2.5">
-                        {/* Custom Badge Icon matching Image 4 */}
-                        <div
-                          className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                          style={{
-                            backgroundColor:
-                              item.status === 'baku_mutu'
-                                ? '#E8F8EE'
-                                : item.status === 'cemar_ringan'
-                                ? '#EBF2FE'
-                                : item.status === 'cemar_sedang'
-                                ? '#FEF9E8'
-                                : item.status === 'cemar_berat'
-                                ? '#FEECEC'
-                                : '#F1F3F5',
-                            color:
-                              item.status === 'baku_mutu'
-                                ? '#22c55e'
-                                : item.status === 'cemar_ringan'
-                                ? '#3b82f6'
-                                : item.status === 'cemar_sedang'
-                                ? '#eab308'
-                                : item.status === 'cemar_berat'
-                                ? '#ef4444' // Warna merah
-                                : '#64748b', // Tanpa data circle with X
-                          }}
-                        >
-                          <WaterQualityStatusIcon status={item.status} className="w-5 h-5" />
-                        </div>
+                        {/* Circular Weather Badge matching User's Uploaded Frames */}
+                        <WeatherStationBadge status={item.status} size={28} />
 
                         <span
-                          className={`text-[14px] font-normal ${
-                            isDarkMode ? 'text-slate-200' : 'text-[#475467]'
+                          className={`text-[14px] font-medium ${
+                            isDarkMode ? 'text-slate-200' : 'text-gray-800'
                           }`}
                         >
                           {item.label}

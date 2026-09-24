@@ -30,7 +30,7 @@ export const TableView: React.FC<TableViewProps> = ({
   const [sortField, setSortField] = useState<keyof Station>('name');
   const [sortAsc, setSortAsc] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const [itemsPerPage, setItemsPerPage] = useState(15);
 
   // Extract unique provinces
   const provinces = useMemo(() => {
@@ -158,7 +158,7 @@ export const TableView: React.FC<TableViewProps> = ({
 
     return (
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium ${badgeClass}`}>
-        <WaterQualityStatusIcon status={status} className="w-3.5 h-3.5 shrink-0" />
+        <WaterQualityStatusIcon status={status} size={16} className="shrink-0" />
         <span>{summary.label}</span>
       </span>
     );
@@ -383,21 +383,41 @@ export const TableView: React.FC<TableViewProps> = ({
         </div>
 
         {/* Pagination Bar */}
-        <div className="p-3 bg-gray-50 dark:bg-slate-800/60 border-t border-gray-200 dark:border-slate-800 flex items-center justify-between text-xs text-gray-600 dark:text-slate-400">
-          <div>
-            Menampilkan{' '}
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {processedStations.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
-            </span>{' '}
-            -{' '}
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {Math.min(currentPage * itemsPerPage, processedStations.length)}
-            </span>{' '}
-            dari{' '}
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {processedStations.length}
-            </span>{' '}
-            stasiun
+        <div className="p-3 bg-gray-50 dark:bg-slate-800/60 border-t border-gray-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-600 dark:text-slate-400">
+          <div className="flex items-center gap-3">
+            <div>
+              Menampilkan{' '}
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {processedStations.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
+              </span>{' '}
+              -{' '}
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {Math.min(currentPage * itemsPerPage, processedStations.length)}
+              </span>{' '}
+              dari{' '}
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {processedStations.length}
+              </span>{' '}
+              stasiun
+            </div>
+
+            <div className="flex items-center gap-1.5 pl-3 border-l border-gray-300 dark:border-slate-700">
+              <span className="text-gray-500">Tampilkan:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="py-1 px-2 text-xs rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 cursor-pointer"
+              >
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5">

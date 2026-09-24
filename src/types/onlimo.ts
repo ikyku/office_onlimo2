@@ -35,6 +35,8 @@ export interface Station {
   subdistrict?: string; // Kelurahan/Desa
   lat: number;
   lng: number;
+  displayLat?: string;
+  displayLng?: string;
   status: WaterQualityStatus;
   ipScore: number; // Indeks Pencemaran (IP)
   badgeNumber: string; // "999" from UI

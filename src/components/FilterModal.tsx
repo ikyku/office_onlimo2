@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Filter, RotateCcw, Check } from 'lucide-react';
 import { WaterQualityStatus } from '../types/onlimo';
 import { STATUS_SUMMARIES } from '../data/mockStations';
+import { WeatherStationBadge } from './WeatherStationBadge';
 
 interface FilterModalProps {
   isOpen: boolean;
@@ -102,10 +103,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: item.color }}
-                    />
+                    <WeatherStationBadge status={item.status} size={18} />
                     <span>{item.label}</span>
                   </div>
                   {tempStatus === item.status && <Check className="w-4 h-4 text-[#ff6900]" />}

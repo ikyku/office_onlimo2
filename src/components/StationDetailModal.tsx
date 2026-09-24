@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Station } from '../types/onlimo';
 import { STATUS_SUMMARIES } from '../data/mockStations';
+import { WeatherStationBadge } from './WeatherStationBadge';
 
 interface StationDetailModalProps {
   station: Station | null;
@@ -114,12 +115,7 @@ export const StationDetailModal: React.FC<StationDetailModalProps> = ({
             }`}
           >
             <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-sm shrink-0"
-                style={{ backgroundColor: statusSummary?.color || '#64748b' }}
-              >
-                {station.badgeNumber}
-              </div>
+              <WeatherStationBadge status={station.status} size={42} />
               <div>
                 <span className="text-xs font-semibold text-gray-600 dark:text-slate-300">
                   Status Kualitas Air:
