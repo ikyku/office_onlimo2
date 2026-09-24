@@ -1,0 +1,6 @@
+{
+  "name": "ONLIMO - Online Monitoring Lingkungan Hidup",
+  "description": "Dashboard Online Monitoring Kualitas Air Kementerian Lingkungan Hidup / Badan Pengendalian Lingkungan Hidup (ONLIMO) Republik Indonesia.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

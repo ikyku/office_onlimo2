@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+}
+
+/* Custom speech-bubble teardrop marker matching ONLIMO UI */
+.onlimo-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 38px;
+  height: 26px;
+  border-radius: 9999px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), filter 0.15s ease;
+  user-select: none;
+}
+
+.onlimo-marker:hover {
+  transform: scale(1.18) translateY(-2px);
+  z-index: 1000 !important;
+  filter: brightness(1.08);
+}
+
+/* The teardrop pointer at the bottom */
+.onlimo-marker::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+}
+
+/* Status colors matching the screenshot */
+.marker-baku-mutu {
+  background-color: #22c55e;
+}
+.marker-baku-mutu::after {
+  border-top: 6px solid #22c55e;
+}
+
+.marker-cemar-ringan {
+  background-color: #3b82f6;
+}
+.marker-cemar-ringan::after {
+  border-top: 6px solid #3b82f6;
+}
+
+.marker-cemar-sedang {
+  background-color: #eab308;
+}
+.marker-cemar-sedang::after {
+  border-top: 6px solid #eab308;
+}
+
+.marker-cemar-berat {
+  background-color: #ef4444;
+}
+.marker-cemar-berat::after {
+  border-top: 6px solid #ef4444;
+}
+
+.marker-tanpa-data {
+  background-color: #64748b;
+}
+.marker-tanpa-data::after {
+  border-top: 6px solid #64748b;
+}
+
+/* Leaflet clean reset */
+.leaflet-container {
+  font-family: inherit;
+  width: 100%;
+  height: 100%;
+  background: #f1f5f9;
+}
+
+.dark .leaflet-container {
+  background: #0f172a;
+}
+
+/* Leaflet control overrides */
+.leaflet-control-zoom {
+  display: none !important; /* We build our own sleek custom controls */
+}
+
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(4px);
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  margin: 4px !important;
+}
+
+.dark .leaflet-control-attribution {
+  background: rgba(15, 23, 42, 0.7) !important;
+  color: #94a3b8 !important;
+}
+
+.dark .leaflet-control-attribution a {
+  color: #cbd5e1 !important;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.6);
+}
