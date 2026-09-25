@@ -5679,7 +5679,7 @@ export const MOCK_STATIONS: Station[] = [
     "isOnline": true
   },
   {
-    "id": "STA-076",
+    "id": "STA-514",
     "code": "KLHK-DI -235",
     "name": "Stasiun KLHK 76",
     "das": "Brantas",

@@ -14,6 +14,7 @@ import {
 import { Station } from '../types/onlimo';
 import { STATUS_SUMMARIES } from '../data/mockStations';
 import { WeatherStationBadge } from './WeatherStationBadge';
+import { formatStationLastUpdate } from '../utils/timezone';
 
 interface StationDetailModalProps {
   station: Station | null;
@@ -152,7 +153,7 @@ export const StationDetailModal: React.FC<StationDetailModalProps> = ({
               </h5>
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Update: {station.lastUpdate}</span>
+                <span>Update: {formatStationLastUpdate(station)}</span>
               </div>
             </div>
 

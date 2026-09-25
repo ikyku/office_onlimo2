@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Station, WaterQualityStatus } from '../types/onlimo';
 import { STATUS_SUMMARIES } from '../data/mockStations';
-import { WaterQualityStatusIcon } from './Sidebar';
+import { formatStationLastUpdate } from '../utils/timezone';
 
 interface TableViewProps {
   stations: Station[];
@@ -124,7 +124,7 @@ export const TableView: React.FC<TableViewProps> = ({
       s.parameters.cod,
       s.parameters.tss,
       s.parameters.temp,
-      `"${s.lastUpdate}"`,
+      `"${formatStationLastUpdate(s)}"`,
     ]);
 
     const csvContent =
@@ -157,9 +157,8 @@ export const TableView: React.FC<TableViewProps> = ({
     }
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium ${badgeClass}`}>
-        <WaterQualityStatusIcon status={status} size={16} className="shrink-0" />
-        <span>{summary.label}</span>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-medium ${badgeClass}`}>
+        {summary.label}
       </span>
     );
   };

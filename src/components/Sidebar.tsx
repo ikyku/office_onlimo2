@@ -16,6 +16,7 @@ import {
 import { Station, WaterQualityStatus } from '../types/onlimo';
 import { INITIAL_METRICS, STATUS_SUMMARIES } from '../data/mockStations';
 import { WeatherStationBadge } from './WeatherStationBadge';
+import { formatStationLastUpdate } from '../utils/timezone';
 
 interface SidebarProps {
   stations: Station[];
@@ -136,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleDownloadData = (title: string) => {
     if (!selectedStation) return;
     const content = `Data ${title} - ${selectedStation.name} (${selectedStation.code})
-Tanggal: ${selectedStation.lastUpdate}
+Tanggal: ${formatStationLastUpdate(selectedStation)}
 Status: ${selectedStation.status}
 IP Score: ${selectedStation.ipScore}
 Waktu Unduh: ${new Date().toISOString()}
@@ -561,24 +562,23 @@ Waktu Unduh: ${new Date().toISOString()}
                   </button>
                 </div>
 
-                {/* Sub-row 2: Status Kualitas Air + Nilai IP + Tanggal & Jam */}
+                {/* Sub-row 2: Status Kualitas Air (Rata Kanan) + Nilai IP + Tanggal & Jam */}
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-slate-800 text-[12px]">
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-medium text-[12px] ${
-                        getStatusBadge(selectedStation.status).className
-                      }`}
-                    >
-                      <WeatherStationBadge status={selectedStation.status} size={16} />
-                      <span>{getStatusBadge(selectedStation.status).label}</span>
-                    </span>
                     <span className="font-semibold text-gray-900 dark:text-white text-[14px]">
                       {selectedStation.ipScore.toFixed(2)}
                     </span>
+                    <span className="text-[12px] text-gray-500 dark:text-gray-400">
+                      &bull; {formatStationLastUpdate(selectedStation)}
+                    </span>
                   </div>
 
-                  <span className="text-[12px] text-gray-500 dark:text-gray-400">
-                    {selectedStation.lastUpdate}
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full font-medium text-[12px] ${
+                      getStatusBadge(selectedStation.status).className
+                    }`}
+                  >
+                    {getStatusBadge(selectedStation.status).label}
                   </span>
                 </div>
               </div>
@@ -729,13 +729,26 @@ Waktu Unduh: ${new Date().toISOString()}
                         </div>
                       </div>
 
-                      {/* Interactive Legend Checkboxes matching Image 1 */}
+                      {/* Interactive Legend Checkboxes with Parameter-specific Colors matching Image 2 */}
                       <div className="flex flex-wrap gap-x-3 gap-y-1.5 pt-3 mt-1 border-t border-gray-100 dark:border-slate-800 text-[12px]">
                         {lineSeries.map((item) => (
                           <label
                             key={item.name}
-                            className="inline-flex items-center gap-1 cursor-pointer select-none"
+                            className="inline-flex items-center gap-1.5 cursor-pointer select-none group"
                           >
+                            <span
+                              className="w-3.5 h-3.5 rounded flex items-center justify-center transition-all border shrink-0"
+                              style={{
+                                backgroundColor: activeLineParams[item.name]
+                                  ? item.color
+                                  : 'transparent',
+                                borderColor: item.color,
+                              }}
+                            >
+                              {activeLineParams[item.name] && (
+                                <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                              )}
+                            </span>
                             <input
                               type="checkbox"
                               checked={activeLineParams[item.name]}
@@ -745,10 +758,10 @@ Waktu Unduh: ${new Date().toISOString()}
                                   [item.name]: !prev[item.name],
                                 }))
                               }
-                              className="w-3.5 h-3.5 rounded text-orange-500 focus:ring-0 cursor-pointer accent-[#ff6900]"
+                              className="sr-only"
                             />
                             <span
-                              className="font-medium"
+                              className="font-medium group-hover:opacity-85 transition-opacity"
                               style={{ color: isDarkMode ? '#cbd5e1' : '#4b5563' }}
                             >
                               {item.name}
@@ -859,29 +872,47 @@ Waktu Unduh: ${new Date().toISOString()}
                         </div>
                       </div>
 
-                      {/* Legend Checkboxes */}
+                      {/* Legend Checkboxes with Status Colors */}
                       <div className="flex flex-wrap gap-x-4 gap-y-1.5 pt-3 mt-1 border-t border-gray-100 dark:border-slate-800 text-[12px]">
-                        {['Baku Mutu', 'Cemar Ringan', 'Cemar Sedang', 'Cemar Berat'].map((s) => (
+                        {[
+                          { name: 'Baku Mutu', color: '#10b981' },
+                          { name: 'Cemar Ringan', color: '#3b82f6' },
+                          { name: 'Cemar Sedang', color: '#eab308' },
+                          { name: 'Cemar Berat', color: '#ef4444' },
+                        ].map((item) => (
                           <label
-                            key={s}
-                            className="inline-flex items-center gap-1.5 cursor-pointer select-none"
+                            key={item.name}
+                            className="inline-flex items-center gap-1.5 cursor-pointer select-none group"
                           >
+                            <span
+                              className="w-3.5 h-3.5 rounded flex items-center justify-center transition-all border shrink-0"
+                              style={{
+                                backgroundColor: activeBarStatuses[item.name]
+                                  ? item.color
+                                  : 'transparent',
+                                borderColor: item.color,
+                              }}
+                            >
+                              {activeBarStatuses[item.name] && (
+                                <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                              )}
+                            </span>
                             <input
                               type="checkbox"
-                              checked={activeBarStatuses[s]}
+                              checked={activeBarStatuses[item.name]}
                               onChange={() =>
                                 setActiveBarStatuses((prev) => ({
                                   ...prev,
-                                  [s]: !prev[s],
+                                  [item.name]: !prev[item.name],
                                 }))
                               }
-                              className="w-3.5 h-3.5 rounded text-orange-500 focus:ring-0 cursor-pointer accent-[#ff6900]"
+                              className="sr-only"
                             />
                             <span
-                              className="font-medium"
+                              className="font-medium group-hover:opacity-85 transition-opacity"
                               style={{ color: isDarkMode ? '#cbd5e1' : '#4b5563' }}
                             >
-                              {s}
+                              {item.name}
                             </span>
                           </label>
                         ))}
@@ -915,7 +946,7 @@ Waktu Unduh: ${new Date().toISOString()}
                           className="flex items-center justify-between p-2.5 hover:bg-gray-50/50 dark:hover:bg-slate-800/40 transition-colors"
                         >
                           {/* Left: Name + Value with Unit */}
-                          <div className="w-24">
+                          <div>
                             <span className="block text-[14px] font-medium text-gray-900 dark:text-white">
                               {row.name}
                             </span>
@@ -924,20 +955,18 @@ Waktu Unduh: ${new Date().toISOString()}
                             </span>
                           </div>
 
-                          {/* Center: Status Pill Badge */}
-                          <div className="flex-1 flex justify-center px-1">
+                          {/* Right: Status Pill Badge (Rata Kanan) + IP Score */}
+                          <div className="flex items-center justify-end gap-3 shrink-0">
                             <span
-                              className={`px-3 py-1 rounded-full text-[12px] font-medium ${
+                              className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium whitespace-nowrap text-right ${
                                 getStatusBadge(row.statusType as WaterQualityStatus).className
                               }`}
                             >
                               {row.statusText}
                             </span>
-                          </div>
-
-                          {/* Right: IP Score */}
-                          <div className="w-8 text-right font-semibold text-[14px] text-gray-900 dark:text-white">
-                            {row.ipScore}
+                            <span className="w-8 text-right font-semibold text-[14px] text-gray-900 dark:text-white">
+                              {row.ipScore}
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -979,13 +1008,14 @@ Waktu Unduh: ${new Date().toISOString()}
                           : 'bg-slate-50/50 border-gray-100'
                       }`}
                     >
-                      <div className="flex h-56 pt-2">
+                      {/* Height increased to h-[340px] for ample vertical space, equal height zones */}
+                      <div className="flex h-[340px] pt-2">
                         {/* Left Axis: "Indeks Pencemaran" + 4 Color Bands */}
-                        <div className="flex items-stretch gap-1 mr-2 shrink-0 select-none">
+                        <div className="flex items-stretch gap-1.5 mr-2 shrink-0 select-none">
                           {/* Vertical Title: "Indeks Pencemaran" */}
                           <div className="flex items-center justify-center">
                             <span
-                              className="text-[12px] text-gray-500 dark:text-gray-400 font-medium tracking-wide"
+                              className="text-[12px] text-gray-500 dark:text-gray-400 font-medium tracking-wide whitespace-nowrap"
                               style={{
                                 writingMode: 'vertical-rl',
                                 transform: 'rotate(180deg)',
@@ -995,37 +1025,37 @@ Waktu Unduh: ${new Date().toISOString()}
                             </span>
                           </div>
 
-                          {/* 4 Colored Bands (Berat, Sedang, Ringan, Baku Mutu) */}
-                          <div className="flex flex-col w-6 rounded-md overflow-hidden text-[12px] font-medium text-center leading-none shadow-2xs">
+                          {/* 4 Colored Bands (Cemar Berat, Cemar Sedang, Cemar Ringan, Baku Mutu) - Panjang Tingginya Sama */}
+                          <div className="flex flex-col w-7 rounded-md overflow-hidden text-[11px] font-medium text-center leading-none shadow-2xs border border-gray-200/80 dark:border-slate-700">
                             <div
-                              className="flex-1 bg-red-100 text-red-700 flex items-center justify-center border-b border-white/60"
+                              className="flex-1 bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300 flex items-center justify-center border-b border-white/60 dark:border-slate-800 p-1"
                               style={{
                                 writingMode: 'vertical-rl',
                                 transform: 'rotate(180deg)',
                               }}
                             >
-                              Berat
+                              Cemar Berat
                             </div>
                             <div
-                              className="flex-1 bg-amber-100 text-amber-700 flex items-center justify-center border-b border-white/60"
+                              className="flex-1 bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 flex items-center justify-center border-b border-white/60 dark:border-slate-800 p-1"
                               style={{
                                 writingMode: 'vertical-rl',
                                 transform: 'rotate(180deg)',
                               }}
                             >
-                              Sedang
+                              Cemar Sedang
                             </div>
                             <div
-                              className="flex-1 bg-blue-100 text-blue-700 flex items-center justify-center border-b border-white/60"
+                              className="flex-1 bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 flex items-center justify-center border-b border-white/60 dark:border-slate-800 p-1"
                               style={{
                                 writingMode: 'vertical-rl',
                                 transform: 'rotate(180deg)',
                               }}
                             >
-                              Ringan
+                              Cemar Ringan
                             </div>
                             <div
-                              className="flex-1 bg-emerald-100 text-emerald-800 flex items-center justify-center"
+                              className="flex-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center justify-center p-1"
                               style={{
                                 writingMode: 'vertical-rl',
                                 transform: 'rotate(180deg)',
@@ -1037,8 +1067,16 @@ Waktu Unduh: ${new Date().toISOString()}
                         </div>
 
                         {/* Chart Bars Area */}
-                        <div className="flex-1 flex flex-col justify-end">
-                          <div className="flex-1 flex items-end justify-around gap-2 px-1 border-b border-gray-200 dark:border-slate-700">
+                        <div className="flex-1 flex flex-col justify-end relative">
+                          {/* Background Gridlines dividing the 4 zones (equal 25% height each) */}
+                          <div className="absolute inset-x-0 top-0 bottom-6 pointer-events-none flex flex-col">
+                            <div className="flex-1 border-b border-dashed border-red-200/50 dark:border-red-900/30" />
+                            <div className="flex-1 border-b border-dashed border-amber-200/50 dark:border-amber-900/30" />
+                            <div className="flex-1 border-b border-dashed border-blue-200/50 dark:border-blue-900/30" />
+                            <div className="flex-1" />
+                          </div>
+
+                          <div className="flex-1 flex items-end justify-around gap-2 px-1 border-b border-gray-200 dark:border-slate-700 relative z-10">
                             {chart4Bars.map((bar) => {
                               const heightPercent = Math.min(100, Math.max(14, (bar.value / 18) * 100));
                               return (
@@ -1062,7 +1100,7 @@ Waktu Unduh: ${new Date().toISOString()}
                           </div>
 
                           {/* X-Axis Parameter Labels */}
-                          <div className="flex justify-around gap-2 px-1 pt-1.5 text-center">
+                          <div className="flex justify-around gap-2 px-1 pt-1.5 text-center relative z-10">
                             {chart4Bars.map((bar) => (
                               <div
                                 key={bar.name}
@@ -1103,7 +1141,7 @@ Waktu Unduh: ${new Date().toISOString()}
                   <div className="flex justify-between items-center py-0.5">
                     <span className="text-gray-500 dark:text-gray-400 font-normal text-[12px]">Last Update</span>
                     <span className="font-semibold text-gray-900 dark:text-white text-[12px]">
-                      {selectedStation.lastUpdate || '28/08/2026 14:02:57'}
+                      {formatStationLastUpdate(selectedStation)}
                     </span>
                   </div>
 

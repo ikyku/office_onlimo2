@@ -14,6 +14,7 @@ import { FilterModal } from './components/FilterModal';
 import { RegulationModal } from './components/RegulationModal';
 import { MOCK_STATIONS } from './data/mockStations';
 import { Station, WaterQualityStatus } from './types/onlimo';
+import { getStationTimezone } from './utils/timezone';
 import { BarChart3, X } from 'lucide-react';
 
 export default function App() {
@@ -104,10 +105,11 @@ export default function App() {
           const delta = (Math.random() - 0.5) * 0.2;
           const newPh = Math.max(5.0, Math.min(9.5, +(st.parameters.ph + delta).toFixed(2)));
           const now = new Date();
+          const tz = getStationTimezone(st);
           const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now
             .getMinutes()
             .toString()
-            .padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} WIB`;
+            .padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} ${tz}`;
 
           return {
             ...st,
@@ -115,7 +117,7 @@ export default function App() {
               ...st.parameters,
               ph: newPh,
             },
-            lastUpdate: `2025-08-28 ${timeStr}`,
+            lastUpdate: `28/08/2026 ${timeStr}`,
           };
         })
       );
